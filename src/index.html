@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#191919" />
-  <meta name="description" content="Дорожная карта AI Аналитика: выпущенная 1.4, технический долг и релизы 1.4.1–1.4.8" />
-  <title>AI Аналитик · Дорожная карта 1.4</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23191919'/%3E%3Cpath d='M8 21 16 8l8 13h-5l-3-5-3 5H8Z' fill='%23F08438'/%3E%3C/svg%3E" />
+  <meta name="description" content="__PAGE_DESCRIPTION__" />
+  <title>__PAGE_TITLE__</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23191919'/%3E%3Cpath d='M8 21 16 8l8 13h-5l-3-5-3 5H8Z' fill='%23__FAVICON_COLOR__'/%3E%3C/svg%3E" />
   <style>
     @font-face {
       font-family: "Manrope";
@@ -34,11 +34,17 @@
       --primary: #d96a1b;
       --bright: #f08438;
       --deep-orange: #b95110;
+      --accent-rgb: 217, 106, 27;
+      --bright-rgb: 240, 132, 56;
       --text: #f5f5f5;
       --muted: #aaa;
       --quiet: #777;
       --border: #3d3d3d;
       --border-warm: #604329;
+      --milestone-text: #f1d2bc;
+      --milestone-bg: #2d231c;
+      --milestone-control: #bf9679;
+      --product-team: #efad7c;
       --release-column: 112px;
       --name-column: 300px;
       --team-column: 72px;
@@ -50,6 +56,20 @@
 
     * { box-sizing: border-box; }
 
+    body.product-trainer {
+      --surface-warm: #20213b;
+      --primary: #5558e8;
+      --bright: #7679ff;
+      --deep-orange: #4245bd;
+      --accent-rgb: 85, 88, 232;
+      --bright-rgb: 118, 121, 255;
+      --border-warm: #45488d;
+      --milestone-text: #d7d8ff;
+      --milestone-bg: #232440;
+      --milestone-control: #a7a9f5;
+      --product-team: #b8b9ff;
+    }
+
     html { scroll-behavior: smooth; }
 
     body {
@@ -58,7 +78,7 @@
       min-height: 100vh;
       color: var(--text);
       background:
-        radial-gradient(circle at 72% 17%, rgba(217, 106, 27, .11), transparent 28rem),
+        radial-gradient(circle at 72% 17%, rgba(var(--accent-rgb), .11), transparent 28rem),
         var(--bg);
       font-family: "Manrope", system-ui, sans-serif;
       -webkit-font-smoothing: antialiased;
@@ -120,6 +140,39 @@
       text-transform: none;
     }
 
+    .product-nav {
+      position: absolute;
+      left: 50%;
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .025);
+      transform: translateX(-50%);
+    }
+
+    .product-nav a {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 13px;
+      border-radius: 8px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .product-nav a:hover { color: var(--text); background: rgba(255, 255, 255, .05); }
+    .product-nav a[aria-current="page"] {
+      color: var(--text);
+      background: rgba(var(--accent-rgb), .18);
+      box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), .3);
+    }
+
     .top-meta {
       display: flex;
       align-items: center;
@@ -173,7 +226,7 @@
       flex: 0 0 auto;
       border-color: var(--primary);
       background: var(--primary);
-      box-shadow: 0 10px 28px rgba(217, 106, 27, .2);
+      box-shadow: 0 10px 28px rgba(var(--accent-rgb), .2);
     }
 
     .roadmap-edit-button::before {
@@ -202,7 +255,7 @@
       border: 1px dashed var(--primary);
       border-radius: 10px;
       color: var(--bright);
-      background: rgba(217, 106, 27, .08);
+      background: rgba(var(--accent-rgb), .08);
       cursor: pointer;
       font: inherit;
       font-size: 12px;
@@ -210,7 +263,7 @@
       letter-spacing: .03em;
     }
 
-    .roadmap-add-button:hover { background: rgba(217, 106, 27, .15); }
+    .roadmap-add-button:hover { background: rgba(var(--accent-rgb), .15); }
     .roadmap-add-button[hidden] { display: none; }
 
     .roadmap-save-button {
@@ -231,7 +284,7 @@
       height: 7px;
       border-radius: 50%;
       background: var(--bright);
-      box-shadow: 0 0 14px rgba(240, 132, 56, .9);
+      box-shadow: 0 0 14px rgba(var(--bright-rgb), .9);
     }
 
     main {
@@ -258,7 +311,7 @@
       border-radius: 10px;
       color: var(--bright);
       background: var(--surface-warm);
-      box-shadow: inset 0 0 26px rgba(217, 106, 27, .08);
+      box-shadow: inset 0 0 26px rgba(var(--accent-rgb), .08);
       font-size: 12px;
       font-weight: 700;
       letter-spacing: .13em;
@@ -275,6 +328,7 @@
     }
 
     h1 span { color: var(--bright); }
+    h1 .hero-prefix { color: var(--text); }
 
     .intro-copy {
       margin: 0;
@@ -313,6 +367,84 @@
       font-size: clamp(21px, 2vw, 29px);
       font-weight: 400;
       letter-spacing: -.035em;
+    }
+
+    .meta-editable[contenteditable="true"] {
+      cursor: text;
+      border-radius: 7px;
+      outline: 1px dashed rgba(var(--bright-rgb), .62);
+      outline-offset: 5px;
+      background: rgba(var(--accent-rgb), .08);
+      box-shadow: 0 0 0 6px rgba(var(--accent-rgb), .08);
+    }
+
+    .meta-editable[contenteditable="true"]:focus {
+      outline-style: solid;
+      outline-color: var(--bright);
+      background: rgba(var(--accent-rgb), .14);
+    }
+
+    .timeline-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timeline-view {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, .025);
+    }
+
+    .timeline-view button {
+      min-height: 30px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 7px;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .timeline-view button:hover { color: var(--text); background: rgba(255, 255, 255, .05); }
+    .timeline-view button.is-active {
+      color: var(--text);
+      background: rgba(var(--accent-rgb), .18);
+      box-shadow: inset 0 0 0 1px rgba(var(--bright-rgb), .3);
+    }
+
+    .sprint-navigation {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .sprint-navigation[hidden] { display: none; }
+    .sprint-nav-button {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      background: rgba(255, 255, 255, .025);
+      cursor: pointer;
+    }
+    .sprint-nav-button:hover { border-color: var(--bright); background: rgba(var(--accent-rgb), .1); }
+    .sprint-range {
+      min-width: 104px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
     }
 
     .toolbar {
@@ -365,7 +497,7 @@
     }
 
     .legend .released { background: #8fbe9a; box-shadow: 0 0 9px rgba(143, 190, 154, .35); }
-    .legend .focus { background: var(--bright); box-shadow: 0 0 10px rgba(240, 132, 56, .6); }
+    .legend .focus { background: var(--bright); box-shadow: 0 0 10px rgba(var(--bright-rgb), .6); }
     .legend .parallel { background: transparent; border: 1px solid var(--bright); }
     .legend .next { background: #8d5a35; }
 
@@ -499,8 +631,8 @@
       bottom: 0;
       left: -1px;
       width: 2px;
-      background: repeating-linear-gradient(to bottom, rgba(240, 132, 56, .75) 0 6px, transparent 6px 11px);
-      box-shadow: 0 0 14px rgba(217, 106, 27, .16);
+      background: repeating-linear-gradient(to bottom, rgba(var(--bright-rgb), .75) 0 6px, transparent 6px 11px);
+      box-shadow: 0 0 14px rgba(var(--accent-rgb), .16);
     }
 
     .milestone-pill {
@@ -512,10 +644,10 @@
       align-items: center;
       gap: 7px;
       padding: 5px 9px;
-      border: 1px solid rgba(240, 132, 56, .55);
+      border: 1px solid rgba(var(--bright-rgb), .55);
       border-radius: 9px;
-      color: #f1d2bc;
-      background: #2d231c;
+      color: var(--milestone-text);
+      background: var(--milestone-bg);
       box-shadow: 0 10px 28px rgba(0, 0, 0, .3);
       pointer-events: auto;
       transform: translateX(-50%);
@@ -564,7 +696,7 @@
       flex: 0 0 auto;
       border: 0;
       border-radius: 6px;
-      color: #bf9679;
+      color: var(--milestone-control);
       background: rgba(255, 255, 255, .04);
       font: inherit;
     }
@@ -590,7 +722,7 @@
 
     .release-row:last-child { border-bottom: 0; }
     .release-row:hover { background: rgba(255, 255, 255, .018); }
-    .release-row.is-selected { background: rgba(217, 106, 27, .045); }
+    .release-row.is-selected { background: rgba(var(--accent-rgb), .045); }
     .release-row.is-released .grid-cell.is-complete { background: rgba(101, 157, 113, .075); }
     .release-row.is-released .release-number { color: #bddbc4; }
 
@@ -650,9 +782,9 @@
     }
 
     .team-owner.is-product {
-      border-color: rgba(240, 132, 56, .42);
-      color: #efad7c;
-      background: rgba(217, 106, 27, .1);
+      border-color: rgba(var(--bright-rgb), .42);
+      color: var(--product-team);
+      background: rgba(var(--accent-rgb), .1);
     }
 
     .team-owner.is-development {
@@ -733,7 +865,7 @@
     .team-choice.is-selected {
       opacity: 1;
       border-color: currentColor;
-      box-shadow: 0 0 0 2px rgba(240, 132, 56, .12);
+      box-shadow: 0 0 0 2px rgba(var(--bright-rgb), .12);
     }
 
     .team-choice svg { width: 14px; height: 14px; }
@@ -803,7 +935,7 @@
     .release-order-button:hover:not(:disabled) {
       border-color: var(--bright);
       color: var(--text);
-      background: rgba(217, 106, 27, .1);
+      background: rgba(var(--accent-rgb), .1);
     }
 
     .release-order-button:disabled { cursor: default; opacity: .22; }
@@ -818,7 +950,7 @@
     .release-inline-input:hover,
     .release-inline-input:focus {
       border-color: var(--border-warm);
-      background: rgba(217, 106, 27, .08);
+      background: rgba(var(--accent-rgb), .08);
     }
 
     .delete-stage-button {
@@ -879,7 +1011,7 @@
       border-color: var(--primary);
       color: var(--text);
       background: var(--surface-warm);
-      box-shadow: 0 0 25px rgba(217, 106, 27, .16), inset 0 0 20px rgba(217, 106, 27, .05);
+      box-shadow: 0 0 25px rgba(var(--accent-rgb), .16), inset 0 0 20px rgba(var(--accent-rgb), .05);
     }
 
     .bar.released {
@@ -923,7 +1055,7 @@
     body.roadmap-edit-mode .release-row .bar:active { cursor: grabbing; }
 
     body.can-edit .release-row:hover .bar {
-      box-shadow: 0 0 0 1px rgba(240, 132, 56, .32), 0 10px 24px rgba(0, 0, 0, .22);
+      box-shadow: 0 0 0 1px rgba(var(--bright-rgb), .32), 0 10px 24px rgba(0, 0, 0, .22);
     }
 
     .drag-ghost {
@@ -946,7 +1078,7 @@
 
     .is-selected .selected-indicator {
       background: var(--bright);
-      box-shadow: 0 0 14px rgba(240, 132, 56, .7);
+      box-shadow: 0 0 14px rgba(var(--bright-rgb), .7);
     }
 
     .scroll-hint {
@@ -974,7 +1106,7 @@
 
     .details-main {
       padding: clamp(24px, 3vw, 38px);
-      box-shadow: inset -28px 0 70px rgba(217, 106, 27, .035);
+      box-shadow: inset -28px 0 70px rgba(var(--accent-rgb), .035);
     }
 
     .detail-tag {
@@ -1167,7 +1299,7 @@
 
     .editor-card.is-current {
       border-color: var(--primary);
-      box-shadow: 0 0 0 1px rgba(240, 132, 56, .16), 0 14px 34px rgba(0, 0, 0, .2);
+      box-shadow: 0 0 0 1px rgba(var(--bright-rgb), .16), 0 14px 34px rgba(0, 0, 0, .2);
     }
 
     .editor-card-head {
@@ -1272,6 +1404,8 @@
     .toast.is-visible { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
 
     @media (max-width: 900px) {
+      .product-nav { position: static; margin-left: auto; transform: none; }
+      .top-meta { display: none; }
       .intro { grid-template-columns: 1fr; gap: 24px; }
       .intro-copy { max-width: 680px; }
       .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1282,11 +1416,14 @@
       .detail-tag { margin-bottom: 26px; }
       .toolbar { align-items: flex-end; }
       .toolbar-actions { align-items: flex-end; flex-direction: column-reverse; }
+      .timeline-tools { display: flex; align-items: center; gap: 8px; }
     }
 
     @media (max-width: 640px) {
-      .topbar { padding-inline: 18px; }
+      .topbar { height: auto; min-height: 68px; flex-wrap: wrap; padding: 10px 18px; }
       .brand-sub, .top-meta span:last-child { display: none; }
+      .product-nav { order: 3; width: 100%; }
+      .product-nav a { flex: 1 1 0; justify-content: center; }
       .top-actions { gap: 8px; }
       .edit-button { width: 38px; padding: 0; overflow: hidden; color: transparent; }
       .edit-button::after { content: "✎"; color: var(--text); font-size: 17px; }
@@ -1297,6 +1434,9 @@
       .stat-value { font-size: 20px; }
       .toolbar { display: block; }
       .toolbar-actions { align-items: stretch; margin-top: 18px; }
+      .timeline-tools { justify-content: space-between; }
+      .timeline-view { flex: 1 1 auto; }
+      .timeline-view button { flex: 1 1 auto; }
       .roadmap-edit-button { justify-content: center; width: 100%; }
       .legend { justify-content: flex-start; margin-top: 16px; }
       .roadmap-shell { margin-right: -16px; border-radius: 16px 0 0 16px; }
@@ -1320,14 +1460,18 @@
     }
   </style>
 </head>
-<body>
+<body class="__BODY_CLASS__">
   <a class="skip-link" href="#roadmap">К дорожной карте</a>
   <header class="topbar">
-    <div class="brand" aria-label="AI Аналитик">
+    <div class="brand" aria-label="__PRODUCT_NAME__">
       <img class="brand-logo" src="./assets/iq-group-logo.png" alt="IQ Group" />
-      <span>AI Аналитик</span>
+      <span>__PRODUCT_NAME__</span>
       <span class="brand-sub">Roadmap</span>
     </div>
+    <nav class="product-nav" aria-label="Дорожные карты продуктов">
+      <a href="/" __ANALYST_CURRENT__>AI Аналитик</a>
+      <a href="/trainer" __TRAINER_CURRENT__>AI Тренер</a>
+    </nav>
     <div class="top-actions">
       <div class="top-meta"><i class="live-dot" aria-hidden="true"></i><span id="syncText">Загружаем общий план…</span></div>
       <button class="edit-button" id="editRoadmapButton" type="button" hidden>Редактировать</button>
@@ -1337,15 +1481,15 @@
   <main>
     <section class="intro" aria-labelledby="page-title">
       <div>
-        <p class="eyebrow">План релизов · 1.4</p>
-        <h1 id="page-title">Путь к версии <span id="latestVersion">1.4.8</span></h1>
+        <p class="eyebrow meta-editable" id="eyebrowText" data-meta-key="eyebrow">__EYEBROW__</p>
+        <h1 id="page-title"><span class="hero-prefix meta-editable" id="heroPrefixText" data-meta-key="heroPrefix">__HERO_PREFIX__</span> <span class="meta-editable" id="latestVersion" data-meta-key="heroVersion">__HERO_VERSION__</span></h1>
       </div>
-      <p class="intro-copy">Версия 1.4 уже выпущена. Следующий цикл посвящён техническому долгу и параллельной проработке нового пользовательского пути — затем начинается 1.4.1.</p>
+      <p class="intro-copy meta-editable" id="introCopy" data-meta-key="introCopy">__INTRO_COPY__</p>
 
       <div class="stats" aria-label="Сводка плана">
-        <div class="stat"><span class="stat-label">База</span><span class="stat-value">1.4 выпущена</span></div>
-        <div class="stat"><span class="stat-label">Сейчас</span><span class="stat-value">Технический долг</span></div>
-        <div class="stat"><span class="stat-label">Ритм</span><span class="stat-value">2 недели</span></div>
+        <div class="stat"><span class="stat-label">База</span><span class="stat-value meta-editable" id="baseValue" data-meta-key="baseValue">__BASE_VALUE__</span></div>
+        <div class="stat"><span class="stat-label">Сейчас</span><span class="stat-value meta-editable" id="nowValue" data-meta-key="nowValue">__NOW_VALUE__</span></div>
+        <div class="stat"><span class="stat-label">Ритм</span><span class="stat-value meta-editable" id="rhythmValue" data-meta-key="rhythmValue">__RHYTHM_VALUE__</span></div>
         <div class="stat"><span class="stat-label">Финиш</span><span class="stat-value" id="finishValue">7 февраля</span></div>
       </div>
     </section>
@@ -1357,6 +1501,17 @@
           <h2 id="roadmap-title">Релизы по неделям</h2>
         </div>
         <div class="toolbar-actions">
+          <div class="timeline-tools">
+            <div class="timeline-view" aria-label="Масштаб дорожной карты">
+              <button class="is-active" id="overviewViewButton" type="button" aria-pressed="true">Весь план</button>
+              <button id="sprintViewButton" type="button" aria-pressed="false">2 недели</button>
+            </div>
+            <div class="sprint-navigation" id="sprintNavigation" hidden>
+              <button class="sprint-nav-button" id="previousSprintButton" type="button" aria-label="Предыдущие две недели">←</button>
+              <span class="sprint-range" id="sprintRange"></span>
+              <button class="sprint-nav-button" id="nextSprintButton" type="button" aria-label="Следующие две недели">→</button>
+            </div>
+          </div>
           <div class="legend" aria-label="Легенда статусов">
             <span><i class="released"></i>Выпущено</span>
             <span><i class="focus"></i>В фокусе</span>
@@ -1375,7 +1530,7 @@
           <div class="roadmap">
             <div class="month-row" id="monthRow" aria-hidden="true"></div>
             <div class="week-row" id="weekRow" aria-hidden="true"></div>
-            <div class="milestone-row" id="milestoneRow"></div>
+            <div class="milestone-row" id="milestoneRow" aria-label="Майлстоуны дорожной карты"></div>
             <div id="releaseRows"></div>
             <div class="milestone-layer" id="milestoneLayer" aria-label="Майлстоуны дорожной карты"></div>
           </div>
@@ -1396,7 +1551,7 @@
       </article>
 
       <div class="footnote">
-        <span>1.4 показана как завершённый цикл; каждый следующий этап занимает 10 рабочих дней. 31 декабря и 1–11 января не учитываются.</span>
+        <span class="meta-editable" id="footnoteText" data-meta-key="footnote">__FOOTNOTE__</span>
         <span id="roadmapActionHint">Нажмите на плашку с датой, чтобы открыть этап.</span>
       </div>
     </section>
@@ -1425,9 +1580,11 @@
   <script>
     const DEFAULT_ROADMAP = __DEFAULT_ROADMAP__;
     const INITIAL_ROADMAP = __INITIAL_ROADMAP__;
+    const ROADMAP_CONFIG = __ROADMAP_CONFIG__;
     const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
     const shortMonthNames = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
     const monthTitles = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+    const weekdayTitles = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
     const statusPresets = {
       'Выпущено': { tone: 'released', badge: 'ГОТОВО', itemState: 'Готово' },
       'Сейчас': { tone: 'focus', badge: 'В ФОКУСЕ', itemState: '' },
@@ -1448,7 +1605,10 @@
     };
 
     let roadmapState = structuredClone(INITIAL_ROADMAP);
+    roadmapState.meta = { ...(DEFAULT_ROADMAP.meta || {}), ...(roadmapState.meta || {}) };
     let selectedId = roadmapState.releases.find((release) => release.status === 'Сейчас')?.id || roadmapState.releases[0].id;
+    let timelineMode = 'overview';
+    let sprintStartDate = null;
     let canEdit = false;
     let editMode = false;
     let editorOpen = false;
@@ -1470,10 +1630,12 @@
     const milestoneRow = document.querySelector('#milestoneRow');
     const milestoneLayer = document.querySelector('#milestoneLayer');
     const roadmap = document.querySelector('.roadmap');
+    const roadmapTitle = document.querySelector('#roadmap-title');
     const detailTag = document.querySelector('#detailTag');
     const detailTitle = document.querySelector('#detailTitle');
     const detailSubtitle = document.querySelector('#detailSubtitle');
     const milestones = document.querySelector('#milestones');
+    const metaElements = [...document.querySelectorAll('[data-meta-key]')];
     const latestVersion = document.querySelector('#latestVersion');
     const finishValue = document.querySelector('#finishValue');
     const syncText = document.querySelector('#syncText');
@@ -1483,6 +1645,12 @@
     const roadmapMilestoneButton = document.querySelector('#roadmapMilestoneButton');
     const roadmapSaveButton = document.querySelector('#roadmapSaveButton');
     const roadmapActionHint = document.querySelector('#roadmapActionHint');
+    const overviewViewButton = document.querySelector('#overviewViewButton');
+    const sprintViewButton = document.querySelector('#sprintViewButton');
+    const sprintNavigation = document.querySelector('#sprintNavigation');
+    const previousSprintButton = document.querySelector('#previousSprintButton');
+    const nextSprintButton = document.querySelector('#nextSprintButton');
+    const sprintRange = document.querySelector('#sprintRange');
     const editorPanel = document.querySelector('#editorPanel');
     const editorBackdrop = document.querySelector('#editorBackdrop');
     const editorScroll = document.querySelector('.editor-scroll');
@@ -1492,7 +1660,7 @@
     const editorStatus = document.querySelector('#editorStatus');
     const saveButton = document.querySelector('#saveRoadmapButton');
     const toast = document.querySelector('#toast');
-    const roadmapUpdates = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ai-roadmap-updates') : null;
+    const roadmapUpdates = typeof BroadcastChannel === 'function' ? new BroadcastChannel(ROADMAP_CONFIG.broadcastName) : null;
 
     function parseDate(value) {
       return new Date(`${value}T12:00:00Z`);
@@ -1533,28 +1701,54 @@
       return next;
     }
 
+    function shiftBusinessDays(date, amount) {
+      let next = new Date(date);
+      let remaining = Math.abs(amount);
+      const direction = amount < 0 ? -1 : 1;
+      while (remaining > 0) {
+        next = addDays(next, direction);
+        if (isBusinessDay(next)) remaining -= 1;
+      }
+      return nextBusinessDay(next);
+    }
+
+    function getSprintDays() {
+      let cursor = nextBusinessDay(sprintStartDate || parseDate(roadmapState.baseDate));
+      const days = [];
+      while (days.length < 10) {
+        if (isBusinessDay(cursor)) days.push(new Date(cursor));
+        cursor = addDays(cursor, 1);
+      }
+      return days;
+    }
+
     function buildSchedule() {
       const base = parseDate(roadmapState.baseDate);
       const groups = new Map();
       roadmapState.releases.forEach((release) => {
-        if (!groups.has(release.startWeek)) groups.set(release.startWeek, []);
-        groups.get(release.startWeek).push(release);
+        const nominalStart = release.startDate
+          ? nextBusinessDay(parseDate(release.startDate))
+          : nextBusinessDay(addDays(base, (release.startWeek - 1) * 7));
+        const key = formatInputDate(nominalStart);
+        if (!groups.has(key)) groups.set(key, { nominalStart, releases: [] });
+        groups.get(key).releases.push(release);
       });
 
       const schedule = new Map();
       let nextAvailable = null;
-      [...groups.entries()].sort((a, b) => a[0] - b[0]).forEach(([startWeek, releases]) => {
-        const nominalStart = nextBusinessDay(addDays(base, (startWeek - 1) * 7));
+      [...groups.values()].sort((a, b) => a.nominalStart - b.nominalStart).forEach(({ nominalStart, releases }) => {
         const start = nextAvailable && nominalStart < nextAvailable ? new Date(nextAvailable) : nominalStart;
         let groupEnd = start;
         releases.forEach((release) => {
-          const end = addBusinessDays(start, release.duration * 5 - 1);
+          const durationDays = Math.max(1, Number(release.durationDays) || release.duration * 5);
+          const end = addBusinessDays(start, durationDays - 1);
           if (end > groupEnd) groupEnd = end;
           const visualStartWeek = Math.floor((start - base) / 604800000) + 1;
           const visualEndWeek = Math.floor((end - base) / 604800000) + 1;
           schedule.set(release.id, {
             start,
             end,
+            durationDays,
             visualStartWeek,
             visualDurationWeeks: visualEndWeek - visualStartWeek + 1
           });
@@ -1595,11 +1789,18 @@
 
     function getWeekCount() {
       const releaseWeeks = [...buildSchedule().values()].map((entry) => entry.visualStartWeek + entry.visualDurationWeeks - 1);
-      const milestoneWeeks = (roadmapState.milestones || []).map((milestone) => Number(milestone.week) || 1);
+      const base = parseDate(roadmapState.baseDate);
+      const milestoneWeeks = (roadmapState.milestones || []).map((milestone) => milestone.date
+        ? Math.floor((parseDate(milestone.date) - base) / 604800000) + 1
+        : Number(milestone.week) || 1);
       return Math.max(20, ...releaseWeeks, ...milestoneWeeks);
     }
 
-    function updateAdaptiveColumns(weekCount = getWeekCount()) {
+    function getTimelineColumnCount() {
+      return timelineMode === 'sprint' ? 10 : getWeekCount();
+    }
+
+    function updateAdaptiveColumns(columnCount = getTimelineColumnCount()) {
       const longestVersion = Math.max(0, ...roadmapState.releases.map((release) => String(release.version || '').length));
       const longestName = Math.max(0, ...roadmapState.releases.map((release) => String(release.name || '').length));
       const releaseWidth = Math.min(640, Math.max(112, Math.ceil(longestVersion * 10.5 + (editMode ? 116 : 44))));
@@ -1607,21 +1808,25 @@
       roadmapFixedColumnsWidth = releaseWidth + nameWidth + 72;
       roadmap.style.setProperty('--release-column', `${releaseWidth}px`);
       roadmap.style.setProperty('--name-column', `${nameWidth}px`);
-      roadmap.style.minWidth = `${Math.max(1320, roadmapFixedColumnsWidth + weekCount * 54)}px`;
+      const columnWidth = timelineMode === 'sprint' ? 76 : 54;
+      roadmap.style.minWidth = `${Math.max(1320, roadmapFixedColumnsWidth + columnCount * columnWidth)}px`;
     }
 
     function renderHeaders() {
-      const weekCount = getWeekCount();
-      updateAdaptiveColumns(weekCount);
-      roadmap.style.setProperty('--week-count', weekCount);
+      const columnCount = getTimelineColumnCount();
+      const timelineDates = timelineMode === 'sprint'
+        ? getSprintDays()
+        : Array.from({ length: columnCount }, (_, index) => addDays(parseDate(roadmapState.baseDate), index * 7));
+      updateAdaptiveColumns(columnCount);
+      roadmap.style.setProperty('--week-count', columnCount);
       monthRow.replaceChildren();
       weekRow.replaceChildren();
       milestoneRow.replaceChildren();
 
       const yearLabel = document.createElement('div');
       yearLabel.className = 'month-label';
-      const baseYear = parseDate(roadmapState.baseDate).getUTCFullYear();
-      const lastYear = addDays(parseDate(roadmapState.baseDate), weekCount * 7 - 1).getUTCFullYear();
+      const baseYear = timelineDates[0].getUTCFullYear();
+      const lastYear = timelineDates.at(-1).getUTCFullYear();
       yearLabel.textContent = baseYear === lastYear ? String(baseYear) : `${baseYear} → ${lastYear}`;
       monthRow.appendChild(yearLabel);
 
@@ -1640,15 +1845,8 @@
       teamLabel.textContent = 'Кто';
       weekRow.appendChild(teamLabel);
 
-      const milestoneCaption = document.createElement('div');
-      milestoneCaption.className = 'milestone-caption';
-      milestoneCaption.textContent = 'Майлстоуны';
-      milestoneRow.appendChild(milestoneCaption);
-
       const groups = [];
-      for (let index = 0; index < weekCount; index += 1) {
-        const start = addDays(parseDate(roadmapState.baseDate), index * 7);
-        const end = addDays(start, 4);
+      timelineDates.forEach((start, index) => {
         const key = `${start.getUTCFullYear()}-${start.getUTCMonth()}`;
         const current = groups.at(-1);
         if (current?.key === key) current.count += 1;
@@ -1656,14 +1854,20 @@
 
         const cell = document.createElement('div');
         cell.className = 'week';
-        cell.textContent = `${pad(start.getUTCDate())}–${pad(end.getUTCDate())}`;
+        if (timelineMode === 'sprint') {
+          cell.textContent = `${weekdayTitles[start.getUTCDay()]} · ${pad(start.getUTCDate())}`;
+          cell.title = `${start.getUTCDate()} ${monthNames[start.getUTCMonth()]}`;
+        } else {
+          const end = addDays(start, 4);
+          cell.textContent = `${pad(start.getUTCDate())}–${pad(end.getUTCDate())}`;
+        }
         weekRow.appendChild(cell);
 
         const milestoneCell = document.createElement('div');
         milestoneCell.className = 'milestone-week-cell';
         milestoneCell.style.gridColumn = String(index + 4);
         milestoneRow.appendChild(milestoneCell);
-      }
+      });
 
       groups.forEach((group) => {
         const cell = document.createElement('div');
@@ -1672,6 +1876,12 @@
         cell.textContent = monthTitles[group.month];
         monthRow.appendChild(cell);
       });
+
+      if (timelineMode === 'sprint') {
+        const first = timelineDates[0];
+        const last = timelineDates.at(-1);
+        sprintRange.textContent = `${first.getUTCDate()} ${shortMonthNames[first.getUTCMonth()]} — ${last.getUTCDate()} ${shortMonthNames[last.getUTCMonth()]}`;
+      }
     }
 
     function selectRelease(id) {
@@ -1718,6 +1928,15 @@
 
     function moveMilestone(milestone, week) {
       milestone.week = Math.max(1, Math.min(52, week));
+      milestone.date = '';
+      markDirty();
+      renderAll();
+    }
+
+    function moveMilestoneToDate(milestone, date) {
+      const target = nextBusinessDay(date);
+      milestone.date = formatInputDate(target);
+      milestone.week = Math.max(1, Math.min(52, Math.floor((target - parseDate(roadmapState.baseDate)) / 604800000) + 1));
       markDirty();
       renderAll();
     }
@@ -1726,6 +1945,8 @@
       let startX = 0;
       let startWeek = milestone.week;
       let previewWeek = startWeek;
+      let startDate = milestone.date ? parseDate(milestone.date) : nextBusinessDay(addDays(parseDate(roadmapState.baseDate), milestone.week * 7));
+      let previewDays = 0;
 
       grip.addEventListener('pointerdown', (event) => {
         if (event.button !== 0 || saving) return;
@@ -1734,22 +1955,35 @@
         startX = event.clientX;
         startWeek = milestone.week;
         previewWeek = startWeek;
+        startDate = milestone.date ? parseDate(milestone.date) : nextBusinessDay(addDays(parseDate(roadmapState.baseDate), milestone.week * 7));
+        previewDays = 0;
         grip.setPointerCapture(event.pointerId);
       });
 
       grip.addEventListener('pointermove', (event) => {
         if (!grip.hasPointerCapture(event.pointerId)) return;
         event.preventDefault();
-        const weekWidth = (roadmap.clientWidth - roadmapFixedColumnsWidth) / getWeekCount();
-        const deltaWeeks = Math.round((event.clientX - startX) / weekWidth);
-        previewWeek = Math.max(1, Math.min(52, startWeek + deltaWeeks));
-        markerElement.style.left = `${roadmapFixedColumnsWidth + previewWeek * weekWidth}px`;
+        const columnCount = getTimelineColumnCount();
+        const columnWidth = (roadmap.clientWidth - roadmapFixedColumnsWidth) / columnCount;
+        const delta = Math.round((event.clientX - startX) / columnWidth);
+        if (timelineMode === 'sprint') {
+          previewDays = delta;
+          const target = shiftBusinessDays(startDate, previewDays);
+          const index = getSprintDays().findIndex((day) => formatInputDate(day) === formatInputDate(target));
+          markerElement.style.left = `${roadmapFixedColumnsWidth + (Math.max(0, index) + 1) * columnWidth}px`;
+        } else {
+          previewWeek = Math.max(1, Math.min(52, startWeek + delta));
+          markerElement.style.left = `${roadmapFixedColumnsWidth + previewWeek * columnWidth}px`;
+        }
       });
 
       const finish = (event) => {
         if (!grip.hasPointerCapture(event.pointerId)) return;
         grip.releasePointerCapture(event.pointerId);
-        if (event.type === 'pointerup' && previewWeek !== startWeek) {
+        if (event.type === 'pointerup' && timelineMode === 'sprint' && previewDays !== 0) {
+          moveMilestoneToDate(milestone, shiftBusinessDays(startDate, previewDays));
+          showToast('Майлстоун перемещён на другой день. Нажмите «Сохранить»');
+        } else if (event.type === 'pointerup' && previewWeek !== startWeek) {
           moveMilestone(milestone, previewWeek);
           showToast('Майлстоун перемещён. Нажмите «Сохранить»');
         } else {
@@ -1761,19 +1995,28 @@
       grip.addEventListener('keydown', (event) => {
         if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
         event.preventDefault();
-        moveMilestone(milestone, milestone.week + (event.key === 'ArrowRight' ? 1 : -1));
+        const direction = event.key === 'ArrowRight' ? 1 : -1;
+        if (timelineMode === 'sprint') moveMilestoneToDate(milestone, shiftBusinessDays(startDate, direction));
+        else moveMilestone(milestone, milestone.week + direction);
       });
     }
 
     function renderMilestones() {
       milestoneLayer.replaceChildren();
-      const weekCount = getWeekCount();
-      const weekWidth = (roadmap.clientWidth - roadmapFixedColumnsWidth) / weekCount;
+      const columnCount = getTimelineColumnCount();
+      const columnWidth = (roadmap.clientWidth - roadmapFixedColumnsWidth) / columnCount;
+      const sprintDays = timelineMode === 'sprint' ? getSprintDays() : null;
       (roadmapState.milestones || []).forEach((milestone) => {
+        const markerDate = milestone.date
+          ? parseDate(milestone.date)
+          : nextBusinessDay(addDays(parseDate(roadmapState.baseDate), milestone.week * 7));
+        const sprintIndex = sprintDays?.findIndex((day) => formatInputDate(day) === formatInputDate(markerDate));
+        if (timelineMode === 'sprint' && sprintIndex < 0) return;
         const marker = document.createElement('div');
         marker.className = 'milestone-marker';
         marker.dataset.id = milestone.id;
-        marker.style.left = `${roadmapFixedColumnsWidth + milestone.week * weekWidth}px`;
+        const markerColumn = timelineMode === 'sprint' ? sprintIndex + 1 : milestone.week;
+        marker.style.left = `${roadmapFixedColumnsWidth + markerColumn * columnWidth}px`;
 
         const line = document.createElement('span');
         line.className = 'milestone-line';
@@ -1831,9 +2074,10 @@
 
     function attachBarDrag(bar, release) {
       let originX = 0;
-      let deltaWeeks = 0;
+      let deltaUnits = 0;
       let moved = false;
       let suppressClick = false;
+      let originalStartDate = null;
       const dateLabel = bar.querySelector('.bar-date');
 
       if (canEdit) {
@@ -1866,8 +2110,9 @@
         event.preventDefault();
         event.stopPropagation();
         originX = event.clientX;
-        deltaWeeks = 0;
+        deltaUnits = 0;
         moved = false;
+        originalStartDate = new Date(releaseDates(release).start);
         bar.setPointerCapture(event.pointerId);
         bar.classList.add('drag-ghost');
       });
@@ -1875,18 +2120,24 @@
       bar.addEventListener('pointermove', (event) => {
         if (!bar.hasPointerCapture(event.pointerId)) return;
         event.preventDefault();
-        const weekWidth = (roadmap.clientWidth - roadmapFixedColumnsWidth) / getWeekCount();
-        const minDrag = (1 - release.startWeek) * weekWidth;
-        const maxDrag = (52 - release.startWeek) * weekWidth;
+        const columnCount = getTimelineColumnCount();
+        const unitWidth = (roadmap.clientWidth - roadmapFixedColumnsWidth) / columnCount;
+        const minDrag = timelineMode === 'sprint' ? -9 * unitWidth : (1 - release.startWeek) * unitWidth;
+        const maxDrag = timelineMode === 'sprint' ? 9 * unitWidth : (52 - release.startWeek) * unitWidth;
         const dragDistance = Math.max(minDrag, Math.min(maxDrag, event.clientX - originX));
-        deltaWeeks = Math.round(dragDistance / weekWidth);
+        deltaUnits = Math.round(dragDistance / unitWidth);
         moved = moved || Math.abs(dragDistance) > 4;
         bar.style.transform = `translate3d(${dragDistance}px, -1px, 0)`;
         if (dateLabel) {
-          const originalStartWeek = release.startWeek;
-          release.startWeek = originalStartWeek + deltaWeeks;
-          dateLabel.textContent = formatBarRange(release);
-          release.startWeek = originalStartWeek;
+          if (timelineMode === 'sprint') {
+            const preview = shiftBusinessDays(originalStartDate, deltaUnits);
+            dateLabel.textContent = `${preview.getUTCDate()} ${shortMonthNames[preview.getUTCMonth()]}`;
+          } else {
+            const originalStartWeek = release.startWeek;
+            release.startWeek = originalStartWeek + deltaUnits;
+            dateLabel.textContent = formatBarRange(release);
+            release.startWeek = originalStartWeek;
+          }
         }
       });
 
@@ -1898,11 +2149,18 @@
         if (event.type === 'pointerup' && moved) {
           suppressClick = true;
           suppressRowClickUntil = performance.now() + 400;
-          release.startWeek += deltaWeeks;
+          if (timelineMode === 'sprint') {
+            const target = shiftBusinessDays(originalStartDate, deltaUnits);
+            release.startDate = formatInputDate(target);
+            release.startWeek = Math.max(1, Math.min(52, Math.floor((target - parseDate(roadmapState.baseDate)) / 604800000) + 1));
+          } else {
+            release.startWeek += deltaUnits;
+            release.startDate = '';
+          }
           selectedId = release.id;
           markDirty();
           renderAll();
-          showToast('Срок изменён. Нажмите «Сохранить»');
+          showToast(timelineMode === 'sprint' ? 'Дата изменена по дням. Нажмите «Сохранить»' : 'Срок изменён. Нажмите «Сохранить»');
           return;
         }
         if (dateLabel) dateLabel.textContent = formatBarRange(release);
@@ -1913,7 +2171,8 @@
     }
 
     function renderRoadmap() {
-      const weekCount = getWeekCount();
+      const columnCount = getTimelineColumnCount();
+      const sprintDays = timelineMode === 'sprint' ? getSprintDays() : null;
       const schedule = buildSchedule();
       releaseRows.replaceChildren();
       roadmapState.releases.forEach((release, releaseIndex) => {
@@ -2067,26 +2326,39 @@
         }
         row.appendChild(teamCell);
 
-        for (let week = 0; week < weekCount; week += 1) {
+        for (let column = 0; column < columnCount; column += 1) {
           const cell = document.createElement('span');
-          const isComplete = release.tone === 'released'
-            && week + 1 >= timing.visualStartWeek
-            && week + 1 < timing.visualStartWeek + timing.visualDurationWeeks;
+          const isComplete = release.tone === 'released' && (timelineMode === 'sprint'
+            ? sprintDays[column] >= timing.start && sprintDays[column] <= timing.end
+            : column + 1 >= timing.visualStartWeek && column + 1 < timing.visualStartWeek + timing.visualDurationWeeks);
           cell.className = `grid-cell${isComplete ? ' is-complete' : ''}`;
-          cell.style.gridColumn = String(week + 4);
+          cell.style.gridColumn = String(column + 4);
           cell.setAttribute('aria-hidden', 'true');
           row.appendChild(cell);
         }
 
-        const bar = document.createElement('span');
-        bar.className = `bar ${release.tone || ''}`;
-        bar.style.gridColumn = `${timing.visualStartWeek + 3} / span ${timing.visualDurationWeeks}`;
-        bar.title = canEdit && editMode
-          ? `${formatRange(release)} · Перетащите на другую неделю или нажмите для подробного редактирования`
-          : formatRange(release);
-        bar.appendChild(createTextElement('bar-date', formatBarRange(release)));
-        attachBarDrag(bar, release);
-        row.appendChild(bar);
+        let barStart = timing.visualStartWeek - 1;
+        let barSpan = timing.visualDurationWeeks;
+        if (timelineMode === 'sprint') {
+          const visibleIndexes = sprintDays
+            .map((day, index) => day >= timing.start && day <= timing.end ? index : -1)
+            .filter((index) => index >= 0);
+          barStart = visibleIndexes[0] ?? -1;
+          barSpan = visibleIndexes.length;
+        }
+        if (barStart >= 0 && barStart < columnCount && barSpan > 0) {
+          const bar = document.createElement('span');
+          bar.className = `bar ${release.tone || ''}`;
+          bar.style.gridColumn = `${barStart + 4} / span ${Math.min(barSpan, columnCount - barStart)}`;
+          bar.title = canEdit && editMode
+            ? `${formatRange(release)} · Перетащите на ${timelineMode === 'sprint' ? 'другой день' : 'другую неделю'} или нажмите для подробного редактирования`
+            : formatRange(release);
+          bar.appendChild(createTextElement('bar-date', timelineMode === 'sprint' && barSpan === 1
+            ? `${sprintDays[barStart].getUTCDate()} ${shortMonthNames[sprintDays[barStart].getUTCMonth()]}`
+            : formatBarRange(release)));
+          attachBarDrag(bar, release);
+          row.appendChild(bar);
+        }
         releaseRows.appendChild(row);
       });
     }
@@ -2110,13 +2382,23 @@
     }
 
     function renderSummary() {
-      const scheduled = roadmapState.releases.filter((release) => /^\d/.test(release.version));
-      latestVersion.textContent = scheduled.at(-1)?.version || roadmapState.releases.at(-1)?.version || '—';
-      const last = [...roadmapState.releases].sort((a, b) => (b.startWeek + b.duration) - (a.startWeek + a.duration))[0];
+      roadmapState.meta = { ...(DEFAULT_ROADMAP.meta || {}), ...(roadmapState.meta || {}) };
+      metaElements.forEach((element) => {
+        if (document.activeElement !== element) element.textContent = roadmapState.meta[element.dataset.metaKey] || '';
+      });
+      const last = [...roadmapState.releases].sort((a, b) => releaseDates(b).end - releaseDates(a).end)[0];
       if (last) {
         const finish = releaseDates(last).end;
         finishValue.textContent = `${finish.getUTCDate()} ${monthNames[finish.getUTCMonth()]}`;
       }
+    }
+
+    function setMetaEditing(enabled) {
+      metaElements.forEach((element) => {
+        element.contentEditable = enabled ? 'true' : 'false';
+        element.setAttribute('aria-label', enabled ? `Редактировать: ${element.textContent.trim()}` : element.textContent.trim());
+        element.title = enabled ? 'Нажмите и измените текст' : '';
+      });
     }
 
     function applyStatusPreset(release, status) {
@@ -2184,9 +2466,10 @@
         start.max = formatInputDate(addDays(parseDate(roadmapState.baseDate), 51 * 7));
         start.value = formatInputDate(releaseDates(release).start);
         start.addEventListener('change', () => {
-          const candidate = parseDate(start.value || roadmapState.baseDate);
+          const candidate = nextBusinessDay(parseDate(start.value || roadmapState.baseDate));
           const daysFromBase = Math.round((candidate - parseDate(roadmapState.baseDate)) / 86400000);
-          release.startWeek = Math.max(1, Math.min(52, Math.round(daysFromBase / 7) + 1));
+          release.startDate = formatInputDate(candidate);
+          release.startWeek = Math.max(1, Math.min(52, Math.floor(daysFromBase / 7) + 1));
           start.value = formatInputDate(releaseDates(release).start);
           markDirty();
           renderHeaders();
@@ -2199,10 +2482,18 @@
         const duration = document.createElement('input');
         duration.type = 'number';
         duration.min = '1';
-        duration.max = '12';
-        duration.value = String(release.duration);
-        duration.addEventListener('change', () => { release.duration = Math.max(1, Math.min(12, Number(duration.value) || 1)); markDirty(); renderHeaders(); renderRoadmap(); renderDetails(); renderSummary(); });
-        fields.appendChild(makeField('Срок, недель', duration));
+        duration.max = '60';
+        duration.value = String(release.durationDays || release.duration * 5);
+        duration.addEventListener('change', () => {
+          release.durationDays = Math.max(1, Math.min(60, Number(duration.value) || 1));
+          release.duration = Math.max(1, Math.min(12, Math.ceil(release.durationDays / 5)));
+          markDirty();
+          renderHeaders();
+          renderRoadmap();
+          renderDetails();
+          renderSummary();
+        });
+        fields.appendChild(makeField('Срок, рабочих дней', duration));
 
         const status = document.createElement('select');
         Object.keys(statusPresets).forEach((value) => {
@@ -2266,12 +2557,27 @@
     }
 
     function renderAll() {
+      roadmapTitle.textContent = timelineMode === 'sprint' ? 'Релизы по дням · 2 недели' : 'Релизы по неделям';
+      overviewViewButton.classList.toggle('is-active', timelineMode === 'overview');
+      sprintViewButton.classList.toggle('is-active', timelineMode === 'sprint');
+      overviewViewButton.setAttribute('aria-pressed', String(timelineMode === 'overview'));
+      sprintViewButton.setAttribute('aria-pressed', String(timelineMode === 'sprint'));
+      sprintNavigation.hidden = timelineMode !== 'sprint';
       renderHeaders();
       renderRoadmap();
       renderMilestones();
       renderDetails();
       renderSummary();
       if (editorOpen) renderEditor();
+    }
+
+    function setTimelineMode(mode) {
+      timelineMode = mode === 'sprint' ? 'sprint' : 'overview';
+      if (timelineMode === 'sprint' && !sprintStartDate) {
+        const selected = roadmapState.releases.find((release) => release.id === selectedId) || roadmapState.releases[0];
+        sprintStartDate = selected ? releaseDates(selected).start : nextBusinessDay(parseDate(roadmapState.baseDate));
+      }
+      renderAll();
     }
 
     function markDirty() {
@@ -2304,7 +2610,7 @@
         return false;
       }
       try {
-        const response = await fetch('/api/roadmap', { headers: apiHeaders({ accept: 'application/json' }), cache: 'no-store' });
+        const response = await fetch(ROADMAP_CONFIG.apiPath, { headers: apiHeaders({ accept: 'application/json' }), cache: 'no-store' });
         const payload = await response.json();
         if (!response.ok || !payload.canEdit) throw new Error('Неверный ключ редактора');
         canEdit = true;
@@ -2364,6 +2670,7 @@
       }
       editMode = enabled;
       document.body.classList.toggle('roadmap-edit-mode', editMode);
+      setMetaEditing(editMode);
       roadmapAddButton.hidden = !editMode;
       roadmapMilestoneButton.hidden = !editMode;
       roadmapSaveButton.hidden = !editMode;
@@ -2371,7 +2678,7 @@
       roadmapEditButton.textContent = editMode ? 'Готово' : 'Редактировать';
       if (!editButton.hidden) editButton.textContent = editMode ? 'Готово' : 'Редактировать';
       roadmapActionHint.textContent = editMode
-        ? 'Меняйте названия и команду прямо в строках, перетаскивайте плашки по шкале.'
+        ? 'Меняйте тексты, названия и команду прямо на странице; в режиме «2 недели» плашки двигаются по дням.'
         : canEdit
           ? 'Нажмите «Редактировать», чтобы изменить названия и сроки.'
           : 'Нажмите на плашку с датой, чтобы открыть этап.';
@@ -2389,7 +2696,7 @@
       if (!canEdit || !editMode) return;
       const startWeek = Math.min(52, Math.max(...roadmapState.releases.map((release) => release.startWeek + release.duration)));
       const id = `release-${Date.now().toString(36)}`;
-      roadmapState.releases.push({ id, version: 'Новый этап', rowLabel: 'Новый этап', name: 'Введите название', team: 'development', startWeek, duration: 2, status: 'Запланировано', tone: '', badge: '', itemState: '', items: ['Первый результат этапа'] });
+      roadmapState.releases.push({ id, version: 'Новый этап', rowLabel: 'Новый этап', name: 'Введите название', team: 'development', startWeek, duration: 2, startDate: '', durationDays: 10, status: 'Запланировано', tone: '', badge: '', itemState: '', items: ['Первый результат этапа'] });
       selectedId = id;
       markDirty();
       renderAll();
@@ -2407,7 +2714,7 @@
       const week = timing ? timing.visualStartWeek + timing.visualDurationWeeks - 1 : 2;
       const id = `milestone-${Date.now().toString(36)}`;
       if (!Array.isArray(roadmapState.milestones)) roadmapState.milestones = [];
-      roadmapState.milestones.push({ id, label: 'Конец спринта', week: Math.max(1, Math.min(52, week)) });
+      roadmapState.milestones.push({ id, label: 'Конец спринта', week: Math.max(1, Math.min(52, week)), date: '' });
       markDirty();
       renderAll();
       requestAnimationFrame(() => {
@@ -2446,7 +2753,7 @@
 
     async function loadRoadmap(silent = false) {
       try {
-        const response = await fetch('/api/roadmap', { headers: apiHeaders({ accept: 'application/json' }), cache: 'no-store' });
+        const response = await fetch(ROADMAP_CONFIG.apiPath, { headers: apiHeaders({ accept: 'application/json' }), cache: 'no-store' });
         const payload = await response.json();
         if (payload.state && (!dirty || silent)) {
           roadmapState = payload.state;
@@ -2475,7 +2782,7 @@
       roadmapSaveButton.textContent = 'Сохраняем…';
       editorStatus.textContent = 'Сохраняем общий план';
       try {
-        const response = await fetch('/api/roadmap', {
+        const response = await fetch(ROADMAP_CONFIG.apiPath, {
           method: 'PUT',
           headers: apiHeaders({ 'content-type': 'application/json', accept: 'application/json' }),
           body: JSON.stringify(roadmapState)
@@ -2520,6 +2827,36 @@
 
     editButton.addEventListener('click', toggleEditMode);
     roadmapEditButton.addEventListener('click', toggleEditMode);
+    overviewViewButton.addEventListener('click', () => setTimelineMode('overview'));
+    sprintViewButton.addEventListener('click', () => setTimelineMode('sprint'));
+    previousSprintButton.addEventListener('click', () => {
+      sprintStartDate = shiftBusinessDays(getSprintDays()[0], -10);
+      renderAll();
+    });
+    nextSprintButton.addEventListener('click', () => {
+      sprintStartDate = shiftBusinessDays(getSprintDays()[0], 10);
+      renderAll();
+    });
+    metaElements.forEach((element) => {
+      const singleLine = !['introCopy', 'footnote'].includes(element.dataset.metaKey);
+      element.addEventListener('input', () => {
+        const rawValue = element.innerText.replace(/\r/g, '');
+        roadmapState.meta[element.dataset.metaKey] = singleLine ? rawValue.replace(/\n/g, ' ') : rawValue;
+        markDirty();
+      });
+      element.addEventListener('keydown', (event) => {
+        if (singleLine && event.key === 'Enter') {
+          event.preventDefault();
+          element.blur();
+        }
+      });
+      element.addEventListener('blur', () => {
+        const key = element.dataset.metaKey;
+        const value = (roadmapState.meta[key] || '').trim();
+        roadmapState.meta[key] = value || DEFAULT_ROADMAP.meta?.[key] || '';
+        renderSummary();
+      });
+    });
     roadmapAddButton.addEventListener('click', addReleaseInline);
     roadmapMilestoneButton.addEventListener('click', addMilestoneInline);
     roadmapSaveButton.addEventListener('click', async () => {
@@ -2543,7 +2880,7 @@
     document.querySelector('#addReleaseButton').addEventListener('click', () => {
       const startWeek = Math.min(52, Math.max(...roadmapState.releases.map((release) => release.startWeek + release.duration)));
       const id = `release-${Date.now().toString(36)}`;
-      roadmapState.releases.push({ id, version: 'Новый этап', rowLabel: '', name: 'Без названия', team: 'development', startWeek, duration: 2, status: 'Запланировано', tone: '', badge: '', itemState: '', items: ['Первый результат этапа'] });
+      roadmapState.releases.push({ id, version: 'Новый этап', rowLabel: '', name: 'Без названия', team: 'development', startWeek, duration: 2, startDate: '', durationDays: 10, status: 'Запланировано', tone: '', badge: '', itemState: '', items: ['Первый результат этапа'] });
       selectedId = id;
       editorFocusId = id;
       editorTitle.textContent = 'Редактирование · Новый этап';

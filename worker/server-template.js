@@ -1,5 +1,21 @@
-const PAGE = __PAGE_JSON__;
-const DEFAULT_STATE = __STATE_JSON__;
+const ROADMAPS = {
+  analyst: {
+    id: 1,
+    durableName: "global",
+    apiPath: "/api/roadmap",
+    pagePaths: ["/", "/index.html"],
+    page: __ANALYST_PAGE_JSON__,
+    defaultState: __ANALYST_STATE_JSON__,
+  },
+  trainer: {
+    id: 2,
+    durableName: "trainer",
+    apiPath: "/api/roadmap/trainer",
+    pagePaths: ["/trainer", "/trainer/"],
+    page: __TRAINER_PAGE_JSON__,
+    defaultState: __TRAINER_STATE_JSON__,
+  },
+};
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -28,7 +44,7 @@ function cleanText(value, limit) {
   return String(value ?? "").trim().slice(0, limit);
 }
 
-function validateState(input) {
+function validateState(input, defaultState = {}) {
   if (!input || typeof input !== "object") throw new Error("Некорректный формат дорожной карты");
   const baseDate = cleanText(input.baseDate, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(baseDate)) throw new Error("Некорректная дата начала");
@@ -44,8 +60,12 @@ function validateState(input) {
     ids.add(id);
     const startWeek = Number(release.startWeek);
     const duration = Number(release.duration);
+    const startDate = cleanText(release.startDate, 10);
+    const durationDays = Number(release.durationDays || duration * 5);
     if (!Number.isInteger(startWeek) || startWeek < 1 || startWeek > 52) throw new Error("Неделя начала должна быть от 1 до 52");
     if (!Number.isInteger(duration) || duration < 1 || duration > 12) throw new Error("Длительность должна быть от 1 до 12 недель");
+    if (startDate && !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) throw new Error("Некорректная точная дата этапа");
+    if (!Number.isInteger(durationDays) || durationDays < 1 || durationDays > 60) throw new Error("Длительность должна быть от 1 до 60 рабочих дней");
     const items = Array.isArray(release.items)
       ? release.items.map((item) => cleanText(item, 160)).filter(Boolean).slice(0, 10)
       : [];
@@ -58,6 +78,8 @@ function validateState(input) {
       team: ["product", "development"].includes(release.team) ? release.team : fallbackTeam,
       startWeek,
       duration,
+      startDate,
+      durationDays,
       status: cleanText(release.status, 30) || "Запланировано",
       tone: ["", "released", "focus", "parallel", "next"].includes(release.tone) ? release.tone : "",
       badge: cleanText(release.badge, 24),
@@ -73,15 +95,30 @@ function validateState(input) {
         if (milestoneIds.has(id)) throw new Error("Идентификаторы майлстоунов должны быть уникальными");
         milestoneIds.add(id);
         const week = Number(milestone.week);
+        const date = cleanText(milestone.date, 10);
         if (!Number.isInteger(week) || week < 1 || week > 52) throw new Error("Неделя майлстоуна должна быть от 1 до 52");
+        if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Некорректная дата майлстоуна");
         return {
           id,
           label: cleanText(milestone.label, 60) || "Майлстоун",
           week,
+          date,
         };
       })
     : [];
-  return { baseDate, releases, milestones };
+  const fallbackMeta = defaultState.meta && typeof defaultState.meta === "object" ? defaultState.meta : {};
+  const inputMeta = input.meta && typeof input.meta === "object" ? input.meta : {};
+  const meta = {
+    eyebrow: cleanText(inputMeta.eyebrow, 80) || cleanText(fallbackMeta.eyebrow, 80),
+    heroPrefix: cleanText(inputMeta.heroPrefix, 80) || cleanText(fallbackMeta.heroPrefix, 80),
+    heroVersion: cleanText(inputMeta.heroVersion, 80) || cleanText(fallbackMeta.heroVersion, 80),
+    introCopy: cleanText(inputMeta.introCopy, 500) || cleanText(fallbackMeta.introCopy, 500),
+    baseValue: cleanText(inputMeta.baseValue, 100) || cleanText(fallbackMeta.baseValue, 100),
+    nowValue: cleanText(inputMeta.nowValue, 100) || cleanText(fallbackMeta.nowValue, 100),
+    rhythmValue: cleanText(inputMeta.rhythmValue, 60) || cleanText(fallbackMeta.rhythmValue, 60),
+    footnote: cleanText(inputMeta.footnote, 500) || cleanText(fallbackMeta.footnote, 500),
+  };
+  return { baseDate, meta, releases, milestones };
 }
 
 export class RoadmapStore {
@@ -102,27 +139,27 @@ export class RoadmapStore {
   }
 }
 
-async function loadState(env) {
+async function loadState(env, roadmap) {
   if (env.DB) {
-    const row = await env.DB.prepare("SELECT data, updated_at FROM roadmap_state WHERE id = 1").first();
-    if (!row) return { state: DEFAULT_STATE, updatedAt: null, persistent: true };
+    const row = await env.DB.prepare("SELECT data, updated_at FROM roadmap_state WHERE id = ?").bind(roadmap.id).first();
+    if (!row) return { state: roadmap.defaultState, updatedAt: null, persistent: true };
     try {
-      return { state: validateState(JSON.parse(row.data)), updatedAt: row.updated_at, persistent: true };
+      return { state: validateState(JSON.parse(row.data), roadmap.defaultState), updatedAt: row.updated_at, persistent: true };
     } catch {
-      return { state: DEFAULT_STATE, updatedAt: row.updated_at, persistent: true };
+      return { state: roadmap.defaultState, updatedAt: row.updated_at, persistent: true };
     }
   }
   if (env.ROADMAP_STORE) {
-    const response = await env.ROADMAP_STORE.getByName("global").fetch("https://roadmap.internal/state");
+    const response = await env.ROADMAP_STORE.getByName(roadmap.durableName).fetch("https://roadmap.internal/state");
     const record = await response.json();
-    if (!record.state) return { state: DEFAULT_STATE, updatedAt: null, persistent: true };
+    if (!record.state) return { state: roadmap.defaultState, updatedAt: null, persistent: true };
     try {
-      return { state: validateState(record.state), updatedAt: record.updatedAt || null, persistent: true };
+      return { state: validateState(record.state, roadmap.defaultState), updatedAt: record.updatedAt || null, persistent: true };
     } catch {
-      return { state: DEFAULT_STATE, updatedAt: record.updatedAt || null, persistent: true };
+      return { state: roadmap.defaultState, updatedAt: record.updatedAt || null, persistent: true };
     }
   }
-  return { state: DEFAULT_STATE, updatedAt: null, persistent: false };
+  return { state: roadmap.defaultState, updatedAt: null, persistent: false };
 }
 
 function serializeStateForHtml(state) {
@@ -132,35 +169,59 @@ function serializeStateForHtml(state) {
     .replaceAll("\u2029", "\\u2029");
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function renderPage(page, state) {
+  const meta = state.meta || {};
+  return page
+    .replace("__SERVER_STATE__", serializeStateForHtml(state))
+    .replaceAll("__SERVER_META_EYEBROW__", escapeHtml(meta.eyebrow))
+    .replaceAll("__SERVER_META_HERO_PREFIX__", escapeHtml(meta.heroPrefix))
+    .replaceAll("__SERVER_META_HERO_VERSION__", escapeHtml(meta.heroVersion))
+    .replaceAll("__SERVER_META_INTRO_COPY__", escapeHtml(meta.introCopy))
+    .replaceAll("__SERVER_META_BASE_VALUE__", escapeHtml(meta.baseValue))
+    .replaceAll("__SERVER_META_NOW_VALUE__", escapeHtml(meta.nowValue))
+    .replaceAll("__SERVER_META_RHYTHM_VALUE__", escapeHtml(meta.rhythmValue))
+    .replaceAll("__SERVER_META_FOOTNOTE__", escapeHtml(meta.footnote));
+}
+
 export default {
   async fetch(request, env, ctx) {
     void ctx;
     const url = new URL(request.url);
+    const roadmap = Object.values(ROADMAPS).find((entry) => entry.apiPath === url.pathname);
 
-    if (url.pathname === "/api/roadmap" && request.method === "GET") {
+    if (roadmap && request.method === "GET") {
       try {
-        const current = await loadState(env);
+        const current = await loadState(env, roadmap);
         return json({ ...current, canEdit: canEdit(request, env) });
       } catch (error) {
         console.error("roadmap_load_failed", error);
-        return json({ state: DEFAULT_STATE, updatedAt: null, persistent: false, canEdit: canEdit(request, env), error: "Хранилище временно недоступно" }, 503);
+        return json({ state: roadmap.defaultState, updatedAt: null, persistent: false, canEdit: canEdit(request, env), error: "Хранилище временно недоступно" }, 503);
       }
     }
 
-    if (url.pathname === "/api/roadmap" && request.method === "PUT") {
+    if (roadmap && request.method === "PUT") {
       if (!canEdit(request, env)) return json({ error: "Редактирование доступно только владельцу сайта" }, 403);
       if (!env.DB && !env.ROADMAP_STORE) return json({ error: "Общее хранилище временно недоступно" }, 503);
       const contentLength = Number(request.headers.get("content-length") || 0);
       if (contentLength > 128000) return json({ error: "Дорожная карта слишком большая" }, 413);
       try {
-        const state = validateState(await request.json());
+        const state = validateState(await request.json(), roadmap.defaultState);
         const updatedAt = new Date().toISOString();
         if (env.DB) {
           await env.DB.prepare(
-            "INSERT INTO roadmap_state (id, data, updated_at, updated_by) VALUES (1, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at, updated_by = excluded.updated_by"
-          ).bind(JSON.stringify(state), updatedAt, currentEmail(request)).run();
+            "INSERT INTO roadmap_state (id, data, updated_at, updated_by) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at, updated_by = excluded.updated_by"
+          ).bind(roadmap.id, JSON.stringify(state), updatedAt, currentEmail(request)).run();
         } else {
-          const response = await env.ROADMAP_STORE.getByName("global").fetch("https://roadmap.internal/state", {
+          const response = await env.ROADMAP_STORE.getByName(roadmap.durableName).fetch("https://roadmap.internal/state", {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ state, updatedAt }),
@@ -174,14 +235,15 @@ export default {
       }
     }
 
-    if ((url.pathname === "/" || url.pathname === "/index.html") && request.method === "GET") {
-      let initialState = DEFAULT_STATE;
+    const pageRoadmap = Object.values(ROADMAPS).find((entry) => entry.pagePaths.includes(url.pathname));
+    if (pageRoadmap && request.method === "GET") {
+      let initialState = pageRoadmap.defaultState;
       try {
-        initialState = (await loadState(env)).state;
+        initialState = (await loadState(env, pageRoadmap)).state;
       } catch (error) {
         console.error("roadmap_initial_render_failed", error);
       }
-      const page = PAGE.replace("__SERVER_STATE__", serializeStateForHtml(initialState));
+      const page = renderPage(pageRoadmap.page, initialState);
       return new Response(page, {
         headers: {
           "content-type": "text/html; charset=utf-8",

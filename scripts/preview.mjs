@@ -4,23 +4,30 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const runtimeDirectory = resolve(root, ".sites-runtime");
-const stateFile = resolve(runtimeDirectory, "local-roadmap-state.json");
 const workerSource = await readFile(resolve(root, "dist/server/index.js"), "utf8");
 const workerModule = await import(`data:text/javascript;base64,${Buffer.from(workerSource).toString("base64")}`);
 await mkdir(runtimeDirectory, { recursive: true });
 
-let storedRow;
-try {
-  const saved = JSON.parse(await readFile(stateFile, "utf8"));
-  storedRow = { data: JSON.stringify(saved.state), updated_at: saved.updatedAt || null };
-} catch {
-  const initialState = JSON.parse(await readFile(resolve(root, "data/roadmap.json"), "utf8"));
-  storedRow = { data: JSON.stringify(initialState), updated_at: null };
-  await writeFile(stateFile, JSON.stringify({ state: initialState, updatedAt: null }, null, 2));
+const roadmapFiles = new Map([
+  [1, { stateFile: resolve(runtimeDirectory, "local-roadmap-state.json"), defaultFile: resolve(root, "data/roadmap.json") }],
+  [2, { stateFile: resolve(runtimeDirectory, "local-trainer-roadmap-state.json"), defaultFile: resolve(root, "data/trainer-roadmap.json") }],
+]);
+const storedRows = new Map();
+
+for (const [id, files] of roadmapFiles) {
+  try {
+    const saved = JSON.parse(await readFile(files.stateFile, "utf8"));
+    storedRows.set(id, { data: JSON.stringify(saved.state), updated_at: saved.updatedAt || null });
+  } catch {
+    const initialState = JSON.parse(await readFile(files.defaultFile, "utf8"));
+    storedRows.set(id, { data: JSON.stringify(initialState), updated_at: null });
+    await writeFile(files.stateFile, JSON.stringify({ state: initialState, updatedAt: null }, null, 2));
+  }
 }
 
-async function persistStoredRow() {
-  await writeFile(stateFile, JSON.stringify({
+async function persistStoredRow(id) {
+  const storedRow = storedRows.get(id);
+  await writeFile(roadmapFiles.get(id).stateFile, JSON.stringify({
     state: JSON.parse(storedRow.data),
     updatedAt: storedRow.updated_at,
   }, null, 2));
@@ -32,13 +39,14 @@ const DB = {
     return {
       bind(...values) { bindings = values; return this; },
       async first() {
-        if (sql.startsWith("SELECT")) return storedRow;
+        if (sql.startsWith("SELECT")) return storedRows.get(bindings[0]) || null;
         return null;
       },
       async run() {
         if (sql.startsWith("INSERT")) {
-          storedRow = { data: bindings[0], updated_at: bindings[1] };
-          await persistStoredRow();
+          const [id, data, updatedAt] = bindings;
+          storedRows.set(id, { data, updated_at: updatedAt });
+          await persistStoredRow(id);
         }
         return { success: true };
       },
