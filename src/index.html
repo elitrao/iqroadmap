@@ -133,6 +133,7 @@
     }
 
     .edit-button,
+    .roadmap-edit-button,
     .editor-button {
       min-height: 38px;
       padding: 0 16px;
@@ -148,10 +149,43 @@
     }
 
     .edit-button:hover,
+    .roadmap-edit-button:hover,
     .editor-button:hover { border-color: var(--bright); }
     .edit-button:active,
+    .roadmap-edit-button:active,
     .editor-button:active { transform: translateY(1px); }
     .edit-button[hidden] { display: none; }
+
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 18px;
+    }
+
+    .roadmap-edit-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 42px;
+      flex: 0 0 auto;
+      border-color: var(--primary);
+      background: var(--primary);
+      box-shadow: 0 10px 28px rgba(217, 106, 27, .2);
+    }
+
+    .roadmap-edit-button::before {
+      content: "✎";
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .roadmap-edit-button.is-locked {
+      border-color: var(--border-warm);
+      color: #c6bdb5;
+      background: var(--surface-warm);
+      box-shadow: none;
+    }
 
     .live-dot {
       width: 7px;
@@ -432,14 +466,15 @@
       margin: 0 7px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 0 14px;
+      justify-content: center;
+      min-width: 0;
+      overflow: hidden;
+      padding: 0 8px;
       border: 1px solid #4c4c4c;
       border-radius: 10px;
       color: #bdbdbd;
       background: #2a2a2a;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       letter-spacing: .01em;
       transition: border-color 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
@@ -470,6 +505,14 @@
     .bar.next {
       border-color: #6e4b32;
       background: #29231f;
+    }
+
+    .bar-date {
+      min-width: 0;
+      overflow: hidden;
+      text-align: center;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .bar b {
@@ -809,6 +852,7 @@
       .details { grid-template-columns: 1fr; }
       .detail-tag { margin-bottom: 26px; }
       .toolbar { align-items: flex-end; }
+      .toolbar-actions { align-items: flex-end; flex-direction: column-reverse; }
     }
 
     @media (max-width: 640px) {
@@ -823,6 +867,8 @@
       .stat { padding: 16px 14px 18px; }
       .stat-value { font-size: 20px; }
       .toolbar { display: block; }
+      .toolbar-actions { align-items: stretch; margin-top: 18px; }
+      .roadmap-edit-button { justify-content: center; width: 100%; }
       .legend { justify-content: flex-start; margin-top: 16px; }
       .roadmap-shell { margin-right: -16px; border-radius: 16px 0 0 16px; }
       .scroll-hint { display: block; }
@@ -870,11 +916,14 @@
           <span class="section-index">01 / Дорожная карта</span>
           <h2 id="roadmap-title">Релизы по неделям</h2>
         </div>
-        <div class="legend" aria-label="Легенда статусов">
-          <span><i class="released"></i>Выпущено</span>
-          <span><i class="focus"></i>В фокусе</span>
-          <span><i class="parallel"></i>Параллельно</span>
-          <span><i></i>Запланировано</span>
+        <div class="toolbar-actions">
+          <div class="legend" aria-label="Легенда статусов">
+            <span><i class="released"></i>Выпущено</span>
+            <span><i class="focus"></i>В фокусе</span>
+            <span><i class="parallel"></i>Параллельно</span>
+            <span><i></i>Запланировано</span>
+          </div>
+          <button class="roadmap-edit-button is-locked" id="roadmapEditButton" type="button" aria-disabled="true">Редактировать</button>
         </div>
       </div>
 
@@ -931,6 +980,7 @@
   <script>
     const DEFAULT_ROADMAP = __DEFAULT_ROADMAP__;
     const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    const shortMonthNames = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
     const monthTitles = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
     const statusPresets = {
       'Выпущено': { tone: 'released', badge: 'ГОТОВО', itemState: 'Готово' },
@@ -962,6 +1012,7 @@
     const finishValue = document.querySelector('#finishValue');
     const syncText = document.querySelector('#syncText');
     const editButton = document.querySelector('#editRoadmapButton');
+    const roadmapEditButton = document.querySelector('#roadmapEditButton');
     const editorPanel = document.querySelector('#editorPanel');
     const editorBackdrop = document.querySelector('#editorBackdrop');
     const editorList = document.querySelector('#editorList');
@@ -994,14 +1045,24 @@
       const startYear = start.getUTCFullYear();
       const endYear = end.getUTCFullYear();
       if (startYear !== endYear) {
-        return `${pad(start.getUTCDate())} ${monthNames[start.getUTCMonth()]} ${startYear} – ${pad(end.getUTCDate())} ${monthNames[end.getUTCMonth()]} ${endYear}`;
+        return `${start.getUTCDate()} ${monthNames[start.getUTCMonth()]} ${startYear} — ${end.getUTCDate()} ${monthNames[end.getUTCMonth()]} ${endYear}`;
       }
-      return `${pad(start.getUTCDate())} ${monthNames[start.getUTCMonth()]} – ${pad(end.getUTCDate())} ${monthNames[end.getUTCMonth()]}`;
+      if (start.getUTCMonth() === end.getUTCMonth()) {
+        return `${start.getUTCDate()}–${end.getUTCDate()} ${monthNames[start.getUTCMonth()]}`;
+      }
+      return `${start.getUTCDate()} ${monthNames[start.getUTCMonth()]} — ${end.getUTCDate()} ${monthNames[end.getUTCMonth()]}`;
     }
 
     function formatBarRange(release) {
       const { start, end } = releaseDates(release);
-      return `${pad(start.getUTCDate())}.${pad(start.getUTCMonth() + 1)}–${pad(end.getUTCDate())}.${pad(end.getUTCMonth() + 1)}`;
+      if (start.getUTCMonth() === end.getUTCMonth() && start.getUTCFullYear() === end.getUTCFullYear()) {
+        return `${start.getUTCDate()}–${end.getUTCDate()} ${shortMonthNames[start.getUTCMonth()]}`;
+      }
+      return `${start.getUTCDate()} ${shortMonthNames[start.getUTCMonth()]} — ${end.getUTCDate()} ${shortMonthNames[end.getUTCMonth()]}`;
+    }
+
+    function formatInputDate(date) {
+      return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
     }
 
     function getWeekCount() {
@@ -1140,12 +1201,7 @@
         bar.className = `bar ${release.tone || ''}`;
         bar.style.gridColumn = `${release.startWeek + 1} / span ${release.duration}`;
         bar.title = `${formatRange(release)}${canEdit && editorOpen ? ' · Потяните, чтобы изменить сроки' : ''}`;
-        bar.appendChild(createTextElement('', formatBarRange(release)));
-        if (release.badge) {
-          const badge = document.createElement('b');
-          badge.textContent = release.badge;
-          bar.appendChild(badge);
-        }
+        bar.appendChild(createTextElement('bar-date', formatBarRange(release)));
         attachBarDrag(bar, release);
         row.appendChild(bar);
         releaseRows.appendChild(row);
@@ -1236,12 +1292,22 @@
         fields.appendChild(makeField('Название', name));
 
         const start = document.createElement('input');
-        start.type = 'number';
-        start.min = '1';
-        start.max = '52';
-        start.value = String(release.startWeek);
-        start.addEventListener('change', () => { release.startWeek = Math.max(1, Math.min(52, Number(start.value) || 1)); markDirty(); renderHeaders(); renderRoadmap(); renderDetails(); renderSummary(); });
-        fields.appendChild(makeField('Старт, неделя', start));
+        start.type = 'date';
+        start.min = roadmapState.baseDate;
+        start.max = formatInputDate(addDays(parseDate(roadmapState.baseDate), 51 * 7));
+        start.value = formatInputDate(releaseDates(release).start);
+        start.addEventListener('change', () => {
+          const candidate = parseDate(start.value || roadmapState.baseDate);
+          const daysFromBase = Math.round((candidate - parseDate(roadmapState.baseDate)) / 86400000);
+          release.startWeek = Math.max(1, Math.min(52, Math.round(daysFromBase / 7) + 1));
+          start.value = formatInputDate(releaseDates(release).start);
+          markDirty();
+          renderHeaders();
+          renderRoadmap();
+          renderDetails();
+          renderSummary();
+        });
+        fields.appendChild(makeField('Дата начала', start));
 
         const duration = document.createElement('input');
         duration.type = 'number';
@@ -1249,7 +1315,7 @@
         duration.max = '12';
         duration.value = String(release.duration);
         duration.addEventListener('change', () => { release.duration = Math.max(1, Math.min(12, Number(duration.value) || 1)); markDirty(); renderHeaders(); renderRoadmap(); renderDetails(); renderSummary(); });
-        fields.appendChild(makeField('Длительность', duration));
+        fields.appendChild(makeField('Срок, недель', duration));
 
         const status = document.createElement('select');
         Object.keys(statusPresets).forEach((value) => {
@@ -1327,6 +1393,21 @@
       renderRoadmap();
     }
 
+    function requestEditorOpen() {
+      if (!canEdit) {
+        showToast('Редактирование доступно только владельцу сайта');
+        return;
+      }
+      setEditorOpen(true);
+    }
+
+    function updateEditorAvailability() {
+      editButton.hidden = !canEdit;
+      roadmapEditButton.classList.toggle('is-locked', !canEdit);
+      roadmapEditButton.setAttribute('aria-disabled', String(!canEdit));
+      roadmapEditButton.title = canEdit ? 'Открыть редактор дорожной карты' : 'Редактирование доступно владельцу';
+    }
+
     function updateSyncText(persistent) {
       if (!persistent) {
         syncText.textContent = 'Предпросмотр · локальные данные';
@@ -1350,7 +1431,7 @@
           renderAll();
         }
         canEdit = Boolean(payload.canEdit);
-        editButton.hidden = !canEdit;
+        updateEditorAvailability();
         lastUpdatedAt = payload.updatedAt || null;
         updateSyncText(payload.persistent);
         if (!response.ok && !silent) showToast(payload.error || 'Не удалось подключиться к общему плану');
@@ -1391,7 +1472,8 @@
       }
     }
 
-    editButton.addEventListener('click', () => setEditorOpen(true));
+    editButton.addEventListener('click', requestEditorOpen);
+    roadmapEditButton.addEventListener('click', requestEditorOpen);
     document.querySelector('#closeEditorButton').addEventListener('click', () => setEditorOpen(false));
     editorBackdrop.addEventListener('click', () => setEditorOpen(false));
     saveButton.addEventListener('click', saveRoadmap);
