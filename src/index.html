@@ -325,7 +325,7 @@
       background: var(--border);
     }
 
-    .legend .released { background: #d7d0c8; }
+    .legend .released { background: #8fbe9a; box-shadow: 0 0 9px rgba(143, 190, 154, .35); }
     .legend .focus { background: var(--bright); box-shadow: 0 0 10px rgba(240, 132, 56, .6); }
     .legend .parallel { background: transparent; border: 1px solid var(--bright); }
     .legend .next { background: #8d5a35; }
@@ -422,6 +422,8 @@
     .release-row:last-child { border-bottom: 0; }
     .release-row:hover { background: rgba(255, 255, 255, .018); }
     .release-row.is-selected { background: rgba(217, 106, 27, .045); }
+    .release-row.is-released { background: rgba(101, 157, 113, .04); }
+    .release-row.is-released .release-number { color: #bddbc4; }
 
     .release-row:focus-visible {
       outline: 2px solid var(--bright);
@@ -490,9 +492,10 @@
     }
 
     .bar.released {
-      border-color: #4d4b47;
-      color: #d7d0c8;
-      background: #272624;
+      border-color: rgba(143, 190, 154, .52);
+      color: #d3ead8;
+      background: rgba(87, 139, 98, .16);
+      box-shadow: inset 0 0 20px rgba(119, 178, 131, .05);
     }
 
     .bar.parallel {
@@ -521,16 +524,22 @@
       font-weight: 700;
     }
 
-    body.is-editing .release-row .bar {
+    body.can-edit .release-row .bar {
       cursor: grab;
       touch-action: none;
     }
 
-    body.is-editing .release-row .bar:active { cursor: grabbing; }
+    body.can-edit .release-row .bar:active { cursor: grabbing; }
+
+    body.can-edit .release-row:hover .bar {
+      box-shadow: 0 0 0 1px rgba(240, 132, 56, .32), 0 10px 24px rgba(0, 0, 0, .22);
+    }
 
     .drag-ghost {
       opacity: .7;
       transform: translateX(var(--drag-x, 0));
+      transition: none;
+      will-change: transform;
       box-shadow: 0 0 0 1px var(--bright), 0 18px 34px rgba(0, 0, 0, .35);
     }
 
@@ -674,6 +683,29 @@
 
     .editor-panel.is-open { transform: translateX(0); }
 
+    .editor-panel.is-release-modal {
+      top: 50%;
+      right: auto;
+      bottom: auto;
+      left: 50%;
+      width: min(620px, calc(100% - 32px));
+      max-height: calc(100vh - 32px);
+      overflow: hidden;
+      border: 1px solid var(--border-warm);
+      border-radius: 20px;
+      opacity: 0;
+      transform: translate(-50%, -46%) scale(.98);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, .58);
+      transition: transform 220ms ease, opacity 180ms ease;
+    }
+
+    .editor-panel.is-release-modal.is-open {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .editor-panel.is-release-modal #addReleaseButton { display: none; }
+
     .editor-header,
     .editor-footer {
       display: flex;
@@ -737,9 +769,15 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       background: #232323;
+      transition: border-color 180ms ease, box-shadow 180ms ease;
     }
 
     .editor-card.is-dragging { opacity: .45; }
+
+    .editor-card.is-current {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px rgba(240, 132, 56, .16), 0 14px 34px rgba(0, 0, 0, .2);
+    }
 
     .editor-card-head {
       display: flex;
@@ -873,6 +911,17 @@
       .roadmap-shell { margin-right: -16px; border-radius: 16px 0 0 16px; }
       .scroll-hint { display: block; }
       .footnote { display: block; }
+      .editor-panel.is-release-modal {
+        top: auto;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        max-height: 92vh;
+        border-radius: 20px 20px 0 0;
+        transform: translateY(105%);
+      }
+      .editor-panel.is-release-modal.is-open { transform: translateY(0); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -952,7 +1001,7 @@
 
       <div class="footnote">
         <span>1.4 показана как завершённый цикл; каждый следующий этап занимает две недели.</span>
-        <span>Нажмите на строку, чтобы посмотреть состав этапа.</span>
+        <span id="roadmapActionHint">Нажмите на строку, чтобы посмотреть состав этапа.</span>
       </div>
     </section>
   </main>
@@ -964,7 +1013,7 @@
       <button class="icon-button" id="closeEditorButton" type="button" aria-label="Закрыть редактор">×</button>
     </div>
     <div class="editor-scroll">
-      <p class="editor-note">Перетаскивайте карточки для изменения порядка. На самой шкале можно тянуть плашки влево и вправо, меняя сроки.</p>
+      <p class="editor-note" id="editorNote">Меняйте этапы здесь или перетаскивайте плашки прямо на шкале.</p>
       <div class="editor-list" id="editorList"></div>
     </div>
     <div class="editor-footer">
@@ -995,10 +1044,12 @@
     let selectedId = roadmapState.releases.find((release) => release.status === 'Сейчас')?.id || roadmapState.releases[0].id;
     let canEdit = false;
     let editorOpen = false;
+    let editorFocusId = null;
     let dirty = false;
     let saving = false;
     let lastUpdatedAt = null;
     let toastTimer = null;
+    let suppressRowClickUntil = 0;
 
     const releaseRows = document.querySelector('#releaseRows');
     const monthRow = document.querySelector('#monthRow');
@@ -1013,9 +1064,13 @@
     const syncText = document.querySelector('#syncText');
     const editButton = document.querySelector('#editRoadmapButton');
     const roadmapEditButton = document.querySelector('#roadmapEditButton');
+    const roadmapActionHint = document.querySelector('#roadmapActionHint');
     const editorPanel = document.querySelector('#editorPanel');
     const editorBackdrop = document.querySelector('#editorBackdrop');
+    const editorScroll = document.querySelector('.editor-scroll');
     const editorList = document.querySelector('#editorList');
+    const editorTitle = document.querySelector('#editorTitle');
+    const editorNote = document.querySelector('#editorNote');
     const editorStatus = document.querySelector('#editorStatus');
     const saveButton = document.querySelector('#saveRoadmapButton');
     const toast = document.querySelector('#toast');
@@ -1126,13 +1181,15 @@
     }
 
     function attachBarDrag(bar, release) {
-      if (!canEdit || !editorOpen) return;
+      if (!canEdit) return;
       let originX = 0;
       let deltaWeeks = 0;
       let moved = false;
+      let suppressClick = false;
+      const dateLabel = bar.querySelector('.bar-date');
 
       bar.addEventListener('pointerdown', (event) => {
-        if (event.button !== 0) return;
+        if (event.button !== 0 || saving) return;
         event.preventDefault();
         event.stopPropagation();
         originX = event.clientX;
@@ -1145,10 +1202,13 @@
       bar.addEventListener('pointermove', (event) => {
         if (!bar.hasPointerCapture(event.pointerId)) return;
         const weekWidth = (roadmap.clientWidth - 248) / getWeekCount();
-        deltaWeeks = Math.round((event.clientX - originX) / weekWidth);
-        deltaWeeks = Math.max(1 - release.startWeek, Math.min(52 - release.startWeek, deltaWeeks));
-        moved = moved || deltaWeeks !== 0;
-        bar.style.setProperty('--drag-x', `${deltaWeeks * weekWidth}px`);
+        const minDrag = (1 - release.startWeek) * weekWidth;
+        const maxDrag = (52 - release.startWeek) * weekWidth;
+        const dragDistance = Math.max(minDrag, Math.min(maxDrag, event.clientX - originX));
+        deltaWeeks = Math.round(dragDistance / weekWidth);
+        moved = moved || Math.abs(dragDistance) > 4;
+        bar.style.setProperty('--drag-x', `${dragDistance}px`);
+        if (dateLabel) dateLabel.textContent = formatBarRange({ ...release, startWeek: release.startWeek + deltaWeeks });
       });
 
       const finishDrag = (event) => {
@@ -1156,15 +1216,31 @@
         bar.releasePointerCapture(event.pointerId);
         bar.classList.remove('drag-ghost');
         bar.style.removeProperty('--drag-x');
-        if (moved) {
+        if (event.type === 'pointerup' && moved) {
+          suppressClick = true;
+          suppressRowClickUntil = performance.now() + 400;
           release.startWeek += deltaWeeks;
+          selectedId = release.id;
           markDirty();
           renderAll();
+          void saveRoadmap(`Срок «${release.version}» обновлён для всех посетителей`);
+          return;
+        }
+        if (dateLabel) dateLabel.textContent = formatBarRange(release);
+        if (event.type === 'pointerup') {
+          suppressClick = true;
+          selectRelease(release.id);
+          setEditorOpen(true, release.id);
         }
       };
       bar.addEventListener('pointerup', finishDrag);
       bar.addEventListener('pointercancel', finishDrag);
-      bar.addEventListener('click', (event) => event.stopPropagation());
+      bar.addEventListener('click', (event) => {
+        if (!suppressClick) return;
+        event.preventDefault();
+        event.stopPropagation();
+        suppressClick = false;
+      });
     }
 
     function renderRoadmap() {
@@ -1173,10 +1249,14 @@
       roadmapState.releases.forEach((release) => {
         const row = document.createElement('button');
         row.type = 'button';
-        row.className = `release-row${release.id === selectedId ? ' is-selected' : ''}${canEdit && editorOpen ? ' is-editable' : ''}`;
+        row.className = `release-row${release.id === selectedId ? ' is-selected' : ''}${canEdit ? ' is-editable' : ''}${release.tone === 'released' ? ' is-released' : ''}`;
         row.setAttribute('aria-label', `${release.version}, ${release.name}, ${formatRange(release)}`);
         row.setAttribute('aria-pressed', String(release.id === selectedId));
-        row.addEventListener('click', () => selectRelease(release.id));
+        row.addEventListener('click', () => {
+          if (performance.now() < suppressRowClickUntil) return;
+          selectRelease(release.id);
+          if (canEdit) setEditorOpen(true, release.id);
+        });
 
         const indicator = document.createElement('span');
         indicator.className = 'selected-indicator';
@@ -1200,7 +1280,9 @@
         const bar = document.createElement('span');
         bar.className = `bar ${release.tone || ''}`;
         bar.style.gridColumn = `${release.startWeek + 1} / span ${release.duration}`;
-        bar.title = `${formatRange(release)}${canEdit && editorOpen ? ' · Потяните, чтобы изменить сроки' : ''}`;
+        bar.title = canEdit
+          ? `${formatRange(release)} · Нажмите для редактирования или перетащите на другую неделю`
+          : formatRange(release);
         bar.appendChild(createTextElement('bar-date', formatBarRange(release)));
         attachBarDrag(bar, release);
         row.appendChild(bar);
@@ -1254,15 +1336,18 @@
 
     function renderEditor() {
       editorList.replaceChildren();
-      roadmapState.releases.forEach((release) => {
+      const visibleReleases = editorFocusId
+        ? roadmapState.releases.filter((release) => release.id === editorFocusId)
+        : roadmapState.releases;
+      visibleReleases.forEach((release) => {
         const card = document.createElement('article');
-        card.className = 'editor-card';
-        card.draggable = true;
+        card.className = `editor-card${release.id === selectedId ? ' is-current' : ''}`;
+        card.draggable = !editorFocusId;
         card.dataset.id = release.id;
 
         const head = document.createElement('div');
         head.className = 'editor-card-head';
-        head.appendChild(createTextElement('drag-handle', 'Перетащить этап'));
+        head.appendChild(createTextElement('drag-handle', editorFocusId ? 'Выбранный релиз' : 'Перетащить этап'));
         const remove = document.createElement('button');
         remove.type = 'button';
         remove.className = 'delete-button';
@@ -1271,6 +1356,7 @@
           if (roadmapState.releases.length === 1 || !window.confirm(`Удалить этап «${release.version}»?`)) return;
           roadmapState.releases = roadmapState.releases.filter((item) => item.id !== release.id);
           if (selectedId === release.id) selectedId = roadmapState.releases[0].id;
+          if (editorFocusId === release.id) editorFocusId = null;
           markDirty();
           renderAll();
         });
@@ -1379,16 +1465,27 @@
       toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 3200);
     }
 
-    function setEditorOpen(open) {
+    function setEditorOpen(open, releaseId = null) {
       if (open && !canEdit) return;
+      if (releaseId && roadmapState.releases.some((release) => release.id === releaseId)) selectedId = releaseId;
       editorOpen = open;
+      editorFocusId = open ? releaseId : null;
       document.body.classList.toggle('is-editing', open);
+      editorPanel.classList.toggle('is-release-modal', Boolean(open && releaseId));
       editorPanel.classList.toggle('is-open', open);
       editorBackdrop.classList.toggle('is-open', open);
       editorPanel.setAttribute('aria-hidden', String(!open));
       if (open) {
+        const release = roadmapState.releases.find((item) => item.id === selectedId);
+        editorTitle.textContent = editorFocusId && release ? `Редактирование · ${release.version}` : 'Конструктор roadmap';
+        editorNote.textContent = editorFocusId
+          ? 'Измените выбранный релиз или перетащите его плашку на шкале, чтобы быстро сменить дату.'
+          : 'Меняйте этапы здесь или перетаскивайте плашки прямо на шкале.';
         renderEditor();
         document.querySelector('#closeEditorButton').focus();
+        requestAnimationFrame(() => {
+          editorScroll.scrollTo({ top: 0, behavior: 'smooth' });
+        });
       }
       renderRoadmap();
     }
@@ -1403,9 +1500,13 @@
 
     function updateEditorAvailability() {
       editButton.hidden = !canEdit;
+      document.body.classList.toggle('can-edit', canEdit);
       roadmapEditButton.classList.toggle('is-locked', !canEdit);
       roadmapEditButton.setAttribute('aria-disabled', String(!canEdit));
       roadmapEditButton.title = canEdit ? 'Открыть редактор дорожной карты' : 'Редактирование доступно владельцу';
+      roadmapActionHint.textContent = canEdit
+        ? 'Нажмите на релиз для редактирования или перетащите плашку на нужную неделю.'
+        : 'Нажмите на строку, чтобы посмотреть состав этапа.';
     }
 
     function updateSyncText(persistent) {
@@ -1441,7 +1542,7 @@
       }
     }
 
-    async function saveRoadmap() {
+    async function saveRoadmap(successMessage = 'Дорожная карта обновлена для всех посетителей') {
       if (!canEdit || saving) return;
       saving = true;
       saveButton.disabled = true;
@@ -1461,7 +1562,7 @@
         editorStatus.textContent = 'Все изменения сохранены';
         updateSyncText(true);
         renderAll();
-        showToast('Дорожная карта обновлена для всех посетителей');
+        showToast(successMessage);
       } catch (error) {
         editorStatus.textContent = 'Изменения не сохранены';
         showToast(error.message || 'Не удалось сохранить изменения');
@@ -1476,15 +1577,18 @@
     roadmapEditButton.addEventListener('click', requestEditorOpen);
     document.querySelector('#closeEditorButton').addEventListener('click', () => setEditorOpen(false));
     editorBackdrop.addEventListener('click', () => setEditorOpen(false));
-    saveButton.addEventListener('click', saveRoadmap);
+    saveButton.addEventListener('click', () => saveRoadmap());
     document.querySelector('#addReleaseButton').addEventListener('click', () => {
       const startWeek = Math.min(52, Math.max(...roadmapState.releases.map((release) => release.startWeek + release.duration)));
       const id = `release-${Date.now().toString(36)}`;
       roadmapState.releases.push({ id, version: 'Новый этап', rowLabel: '', name: 'Без названия', startWeek, duration: 2, status: 'Запланировано', tone: '', badge: '', itemState: '', items: ['Первый результат этапа'] });
       selectedId = id;
+      editorFocusId = id;
+      editorTitle.textContent = 'Редактирование · Новый этап';
+      editorNote.textContent = 'Заполните новый этап и сохраните изменения.';
       markDirty();
       renderAll();
-      editorList.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      editorScroll.scrollTo({ top: 0, behavior: 'smooth' });
     });
     document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && editorOpen) setEditorOpen(false); });
     window.addEventListener('beforeunload', (event) => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
