@@ -41,7 +41,7 @@ state.releases[0].items = ["Тест сохранения состава эта�
 state.releases[0].team = "product";
 state.releases[0].startDate = "2026-10-06";
 state.releases[0].durationDays = 8;
-state.meta.heroPrefix = "Редактируемый заголовок";
+state.meta.heroTitle = "Редактируемый заголовок";
 state.milestones = [{ id: "sprint-end", label: "Конец спринта", week: 2 }];
 const scenario = state.releases.find((release) => release.id === "release-muqw1ge8");
 scenario.items = ["Тест сохранения состава сценария"];
@@ -63,7 +63,7 @@ assert.deepEqual(JSON.parse(storedRows.get(1).data).releases[0].items, ["Тес�
 assert.equal(JSON.parse(storedRows.get(1).data).releases[0].team, "product");
 assert.equal(JSON.parse(storedRows.get(1).data).releases[0].startDate, "2026-10-06");
 assert.equal(JSON.parse(storedRows.get(1).data).releases[0].durationDays, 8);
-assert.equal(JSON.parse(storedRows.get(1).data).meta.heroPrefix, "Редактируемый заголовок");
+assert.equal(JSON.parse(storedRows.get(1).data).meta.heroTitle, "Редактируемый заголовок");
 assert.deepEqual(JSON.parse(storedRows.get(1).data).milestones, [{ id: "sprint-end", label: "Конец спринта", week: 2, date: "" }]);
 assert.deepEqual(JSON.parse(storedRows.get(1).data).releases.find((release) => release.id === "release-muqw1ge8").items, ["Тест сохранения состава сценария"]);
 

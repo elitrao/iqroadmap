@@ -110,8 +110,10 @@ function validateState(input, defaultState = {}) {
   const inputMeta = input.meta && typeof input.meta === "object" ? input.meta : {};
   const meta = {
     eyebrow: cleanText(inputMeta.eyebrow, 80) || cleanText(fallbackMeta.eyebrow, 80),
-    heroPrefix: cleanText(inputMeta.heroPrefix, 80) || cleanText(fallbackMeta.heroPrefix, 80),
-    heroVersion: cleanText(inputMeta.heroVersion, 80) || cleanText(fallbackMeta.heroVersion, 80),
+    heroTitle: cleanText(inputMeta.heroTitle, 160)
+      || [cleanText(inputMeta.heroPrefix, 80), cleanText(inputMeta.heroVersion, 80)].filter(Boolean).join(" ")
+      || cleanText(fallbackMeta.heroTitle, 160)
+      || [cleanText(fallbackMeta.heroPrefix, 80), cleanText(fallbackMeta.heroVersion, 80)].filter(Boolean).join(" "),
     introCopy: cleanText(inputMeta.introCopy, 500) || cleanText(fallbackMeta.introCopy, 500),
     baseValue: cleanText(inputMeta.baseValue, 100) || cleanText(fallbackMeta.baseValue, 100),
     nowValue: cleanText(inputMeta.nowValue, 100) || cleanText(fallbackMeta.nowValue, 100),
@@ -183,8 +185,7 @@ function renderPage(page, state) {
   return page
     .replace("__SERVER_STATE__", serializeStateForHtml(state))
     .replaceAll("__SERVER_META_EYEBROW__", escapeHtml(meta.eyebrow))
-    .replaceAll("__SERVER_META_HERO_PREFIX__", escapeHtml(meta.heroPrefix))
-    .replaceAll("__SERVER_META_HERO_VERSION__", escapeHtml(meta.heroVersion))
+    .replaceAll("__SERVER_META_HERO_TITLE__", escapeHtml(meta.heroTitle))
     .replaceAll("__SERVER_META_INTRO_COPY__", escapeHtml(meta.introCopy))
     .replaceAll("__SERVER_META_BASE_VALUE__", escapeHtml(meta.baseValue))
     .replaceAll("__SERVER_META_NOW_VALUE__", escapeHtml(meta.nowValue))

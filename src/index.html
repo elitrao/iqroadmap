@@ -266,19 +266,6 @@
     .roadmap-add-button:hover { background: rgba(var(--accent-rgb), .15); }
     .roadmap-add-button[hidden] { display: none; }
 
-    .roadmap-save-button {
-      border-style: solid;
-      color: var(--text);
-      background: var(--primary);
-    }
-
-    .roadmap-save-button:disabled {
-      border-color: var(--border);
-      color: var(--quiet);
-      background: #292929;
-      cursor: default;
-    }
-
     .live-dot {
       width: 7px;
       height: 7px;
@@ -327,8 +314,7 @@
       letter-spacing: -.055em;
     }
 
-    h1 span { color: var(--bright); }
-    h1 .hero-prefix { color: var(--text); }
+    .hero-title { display: inline; color: var(--text); }
 
     .intro-copy {
       margin: 0;
@@ -473,33 +459,6 @@
       font-weight: 350;
       letter-spacing: -.04em;
     }
-
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 16px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .legend span {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .legend i {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--border);
-    }
-
-    .legend .released { background: #8fbe9a; box-shadow: 0 0 9px rgba(143, 190, 154, .35); }
-    .legend .focus { background: var(--bright); box-shadow: 0 0 10px rgba(var(--bright-rgb), .6); }
-    .legend .parallel { background: transparent; border: 1px solid var(--bright); }
-    .legend .next { background: #8d5a35; }
 
     .roadmap-shell {
       overflow: hidden;
@@ -1438,7 +1397,6 @@
       .timeline-view { flex: 1 1 auto; }
       .timeline-view button { flex: 1 1 auto; }
       .roadmap-edit-button { justify-content: center; width: 100%; }
-      .legend { justify-content: flex-start; margin-top: 16px; }
       .roadmap-shell { margin-right: -16px; border-radius: 16px 0 0 16px; }
       .scroll-hint { display: block; }
       .footnote { display: block; }
@@ -1482,7 +1440,7 @@
     <section class="intro" aria-labelledby="page-title">
       <div>
         <p class="eyebrow meta-editable" id="eyebrowText" data-meta-key="eyebrow">__EYEBROW__</p>
-        <h1 id="page-title"><span class="hero-prefix meta-editable" id="heroPrefixText" data-meta-key="heroPrefix">__HERO_PREFIX__</span> <span class="meta-editable" id="latestVersion" data-meta-key="heroVersion">__HERO_VERSION__</span></h1>
+        <h1 id="page-title"><span class="hero-title meta-editable" id="heroTitleText" data-meta-key="heroTitle">__HERO_TITLE__</span></h1>
       </div>
       <p class="intro-copy meta-editable" id="introCopy" data-meta-key="introCopy">__INTRO_COPY__</p>
 
@@ -1512,15 +1470,8 @@
               <button class="sprint-nav-button" id="nextSprintButton" type="button" aria-label="Следующие две недели">→</button>
             </div>
           </div>
-          <div class="legend" aria-label="Легенда статусов">
-            <span><i class="released"></i>Выпущено</span>
-            <span><i class="focus"></i>В фокусе</span>
-            <span><i class="parallel"></i>Параллельно</span>
-            <span><i></i>Запланировано</span>
-          </div>
           <button class="roadmap-add-button" id="roadmapAddButton" type="button" hidden>+ Добавить этап</button>
           <button class="roadmap-add-button" id="roadmapMilestoneButton" type="button" hidden>+ Майлстоун</button>
-          <button class="roadmap-add-button roadmap-save-button" id="roadmapSaveButton" type="button" hidden disabled>Сохранить</button>
           <button class="roadmap-edit-button is-locked" id="roadmapEditButton" type="button" aria-disabled="true">Редактировать</button>
         </div>
       </div>
@@ -1636,14 +1587,12 @@
     const detailSubtitle = document.querySelector('#detailSubtitle');
     const milestones = document.querySelector('#milestones');
     const metaElements = [...document.querySelectorAll('[data-meta-key]')];
-    const latestVersion = document.querySelector('#latestVersion');
     const finishValue = document.querySelector('#finishValue');
     const syncText = document.querySelector('#syncText');
     const editButton = document.querySelector('#editRoadmapButton');
     const roadmapEditButton = document.querySelector('#roadmapEditButton');
     const roadmapAddButton = document.querySelector('#roadmapAddButton');
     const roadmapMilestoneButton = document.querySelector('#roadmapMilestoneButton');
-    const roadmapSaveButton = document.querySelector('#roadmapSaveButton');
     const roadmapActionHint = document.querySelector('#roadmapActionHint');
     const overviewViewButton = document.querySelector('#overviewViewButton');
     const sprintViewButton = document.querySelector('#sprintViewButton');
@@ -2584,8 +2533,6 @@
       dirty = true;
       changeRevision += 1;
       editorStatus.textContent = 'Есть несохранённые изменения';
-      roadmapSaveButton.disabled = false;
-      roadmapSaveButton.textContent = 'Сохранить';
     }
 
     function showToast(message) {
@@ -2673,10 +2620,9 @@
       setMetaEditing(editMode);
       roadmapAddButton.hidden = !editMode;
       roadmapMilestoneButton.hidden = !editMode;
-      roadmapSaveButton.hidden = !editMode;
       roadmapEditButton.classList.toggle('is-active', editMode);
-      roadmapEditButton.textContent = editMode ? 'Готово' : 'Редактировать';
-      if (!editButton.hidden) editButton.textContent = editMode ? 'Готово' : 'Редактировать';
+      roadmapEditButton.textContent = editMode ? 'Сохранить и закончить' : 'Редактировать';
+      if (!editButton.hidden) editButton.textContent = editMode ? 'Сохранить и закончить' : 'Редактировать';
       roadmapActionHint.textContent = editMode
         ? 'Меняйте тексты, названия и команду прямо на странице; в режиме «2 недели» плашки двигаются по дням.'
         : canEdit
@@ -2689,7 +2635,16 @@
 
     async function toggleEditMode() {
       if (!canEdit && !(await unlockEditing())) return;
-      setEditMode(!editMode);
+      if (!editMode) {
+        setEditMode(true);
+        return;
+      }
+      if (saving) return;
+      if (dirty) {
+        await saveRoadmap('Изменения сохранены');
+        if (dirty) return;
+      }
+      setEditMode(false);
     }
 
     function addReleaseInline() {
@@ -2732,7 +2687,6 @@
       roadmapEditButton.title = canEdit ? 'Включить редактирование прямо на карте' : 'Ввести ключ редактора';
       roadmapAddButton.hidden = !canEdit || !editMode;
       roadmapMilestoneButton.hidden = !canEdit || !editMode;
-      roadmapSaveButton.hidden = !canEdit || !editMode;
       roadmapActionHint.textContent = canEdit
         ? 'Нажмите «Редактировать», чтобы изменить названия и сроки.'
         : 'Нажмите на плашку с датой, чтобы открыть этап.';
@@ -2778,8 +2732,12 @@
       saving = true;
       saveButton.disabled = true;
       saveButton.textContent = 'Сохраняем…';
-      roadmapSaveButton.disabled = true;
-      roadmapSaveButton.textContent = 'Сохраняем…';
+      roadmapEditButton.disabled = true;
+      roadmapEditButton.textContent = 'Сохраняем…';
+      if (!editButton.hidden) {
+        editButton.disabled = true;
+        editButton.textContent = 'Сохраняем…';
+      }
       editorStatus.textContent = 'Сохраняем общий план';
       try {
         const response = await fetch(ROADMAP_CONFIG.apiPath, {
@@ -2795,15 +2753,11 @@
           roadmapState = payload.state;
           dirty = false;
           editorStatus.textContent = 'Все изменения сохранены';
-          roadmapSaveButton.disabled = true;
-          roadmapSaveButton.textContent = 'Сохранено';
           if (renderAfterSave) renderAll();
           if (showConfirmation) showToast(successMessage);
           roadmapUpdates?.postMessage({ type: 'roadmap-updated', updatedAt: lastUpdatedAt });
         } else {
           editorStatus.textContent = 'Есть новые несохранённые изменения';
-          roadmapSaveButton.disabled = false;
-          roadmapSaveButton.textContent = 'Сохранить';
         }
       } catch (error) {
         editorStatus.textContent = 'Изменения не сохранены';
@@ -2812,9 +2766,11 @@
         saving = false;
         saveButton.disabled = false;
         saveButton.textContent = 'Сохранить и закрыть';
-        if (dirty) {
-          roadmapSaveButton.disabled = false;
-          roadmapSaveButton.textContent = 'Сохранить';
+        roadmapEditButton.disabled = false;
+        roadmapEditButton.textContent = editMode ? 'Сохранить и закончить' : 'Редактировать';
+        if (!editButton.hidden) {
+          editButton.disabled = false;
+          editButton.textContent = editMode ? 'Сохранить и закончить' : 'Редактировать';
         }
       }
     }
@@ -2859,13 +2815,6 @@
     });
     roadmapAddButton.addEventListener('click', addReleaseInline);
     roadmapMilestoneButton.addEventListener('click', addMilestoneInline);
-    roadmapSaveButton.addEventListener('click', async () => {
-      if (!dirty) {
-        showToast('Нет несохранённых изменений');
-        return;
-      }
-      await saveRoadmap();
-    });
     document.querySelector('#closeEditorButton').addEventListener('click', () => setEditorOpen(false));
     editorBackdrop.addEventListener('click', () => setEditorOpen(false));
     saveButton.addEventListener('click', async () => {

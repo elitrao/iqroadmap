@@ -38,8 +38,7 @@ function buildPage(defaultState, config) {
     .replaceAll("__ANALYST_CURRENT__", config.key === "analyst" ? 'aria-current="page"' : "")
     .replaceAll("__TRAINER_CURRENT__", config.key === "trainer" ? 'aria-current="page"' : "")
     .replaceAll("__EYEBROW__", "__SERVER_META_EYEBROW__")
-    .replaceAll("__HERO_PREFIX__", "__SERVER_META_HERO_PREFIX__")
-    .replaceAll("__HERO_VERSION__", "__SERVER_META_HERO_VERSION__")
+    .replaceAll("__HERO_TITLE__", "__SERVER_META_HERO_TITLE__")
     .replaceAll("__INTRO_COPY__", "__SERVER_META_INTRO_COPY__")
     .replaceAll("__BASE_VALUE__", "__SERVER_META_BASE_VALUE__")
     .replaceAll("__NOW_VALUE__", "__SERVER_META_NOW_VALUE__")
@@ -57,8 +56,6 @@ const analystPage = buildPage(analystState, {
   title: "AI Аналитик · Дорожная карта 1.4",
   description: "Дорожная карта AI Аналитика: выпущенная 1.4, технический долг и следующие релизы",
   eyebrow: "План релизов · 1.4",
-  heroPrefix: "Путь к версии",
-  heroVersion: "1.4.8",
   introCopy: "Версия 1.4 уже выпущена. Следующий цикл посвящён техническому долгу и параллельной проработке нового пользовательского пути — затем начинается 1.4.1.",
   baseValue: "1.4 выпущена",
   nowValue: "Технический долг",
@@ -75,8 +72,6 @@ const trainerPage = buildPage(trainerState, {
   title: "AI Тренер · Дорожная карта",
   description: "Отдельная дорожная карта продукта AI Тренер",
   eyebrow: "План развития · AI Тренер",
-  heroPrefix: "Путь к этапу",
-  heroVersion: "Запуск",
   introCopy: "Отдельный план AI Тренера: от сценариев тренировок до первого запуска. Этапы, сроки и состав работ редактируются независимо от AI Аналитика.",
   baseValue: "План сформирован",
   nowValue: "Сценарии тренировок",
