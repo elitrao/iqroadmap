@@ -17,7 +17,11 @@ function currentEmail(request) {
 
 function canEdit(request, env) {
   const adminEmail = String(env.ADMIN_EMAIL || "").trim().toLowerCase();
-  return Boolean(adminEmail && currentEmail(request) === adminEmail);
+  const editorKey = String(env.EDITOR_KEY || "").trim();
+  const providedKey = String(request.headers.get("x-roadmap-editor-key") || "").trim();
+  const emailMatches = Boolean(adminEmail && currentEmail(request) === adminEmail);
+  const keyMatches = Boolean(editorKey && providedKey && providedKey === editorKey);
+  return emailMatches || keyMatches;
 }
 
 function cleanText(value, limit) {
@@ -80,15 +84,45 @@ function validateState(input) {
   return { baseDate, releases, milestones };
 }
 
-async function loadState(env) {
-  if (!env.DB) return { state: DEFAULT_STATE, updatedAt: null, persistent: false };
-  const row = await env.DB.prepare("SELECT data, updated_at FROM roadmap_state WHERE id = 1").first();
-  if (!row) return { state: DEFAULT_STATE, updatedAt: null, persistent: true };
-  try {
-    return { state: validateState(JSON.parse(row.data)), updatedAt: row.updated_at, persistent: true };
-  } catch {
-    return { state: DEFAULT_STATE, updatedAt: row.updated_at, persistent: true };
+export class RoadmapStore {
+  constructor(state) {
+    this.storage = state.storage;
   }
+
+  async fetch(request) {
+    if (request.method === "GET") {
+      return json((await this.storage.get("roadmap")) || { state: null, updatedAt: null });
+    }
+    if (request.method === "PUT") {
+      const record = await request.json();
+      await this.storage.put("roadmap", record);
+      return json({ ok: true });
+    }
+    return new Response("Method not allowed", { status: 405 });
+  }
+}
+
+async function loadState(env) {
+  if (env.DB) {
+    const row = await env.DB.prepare("SELECT data, updated_at FROM roadmap_state WHERE id = 1").first();
+    if (!row) return { state: DEFAULT_STATE, updatedAt: null, persistent: true };
+    try {
+      return { state: validateState(JSON.parse(row.data)), updatedAt: row.updated_at, persistent: true };
+    } catch {
+      return { state: DEFAULT_STATE, updatedAt: row.updated_at, persistent: true };
+    }
+  }
+  if (env.ROADMAP_STORE) {
+    const response = await env.ROADMAP_STORE.getByName("global").fetch("https://roadmap.internal/state");
+    const record = await response.json();
+    if (!record.state) return { state: DEFAULT_STATE, updatedAt: null, persistent: true };
+    try {
+      return { state: validateState(record.state), updatedAt: record.updatedAt || null, persistent: true };
+    } catch {
+      return { state: DEFAULT_STATE, updatedAt: record.updatedAt || null, persistent: true };
+    }
+  }
+  return { state: DEFAULT_STATE, updatedAt: null, persistent: false };
 }
 
 function serializeStateForHtml(state) {
@@ -115,15 +149,24 @@ export default {
 
     if (url.pathname === "/api/roadmap" && request.method === "PUT") {
       if (!canEdit(request, env)) return json({ error: "Редактирование доступно только владельцу сайта" }, 403);
-      if (!env.DB) return json({ error: "Общее хранилище временно недоступно" }, 503);
+      if (!env.DB && !env.ROADMAP_STORE) return json({ error: "Общее хранилище временно недоступно" }, 503);
       const contentLength = Number(request.headers.get("content-length") || 0);
       if (contentLength > 128000) return json({ error: "Дорожная карта слишком большая" }, 413);
       try {
         const state = validateState(await request.json());
         const updatedAt = new Date().toISOString();
-        await env.DB.prepare(
-          "INSERT INTO roadmap_state (id, data, updated_at, updated_by) VALUES (1, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at, updated_by = excluded.updated_by"
-        ).bind(JSON.stringify(state), updatedAt, currentEmail(request)).run();
+        if (env.DB) {
+          await env.DB.prepare(
+            "INSERT INTO roadmap_state (id, data, updated_at, updated_by) VALUES (1, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at, updated_by = excluded.updated_by"
+          ).bind(JSON.stringify(state), updatedAt, currentEmail(request)).run();
+        } else {
+          const response = await env.ROADMAP_STORE.getByName("global").fetch("https://roadmap.internal/state", {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ state, updatedAt }),
+          });
+          if (!response.ok) throw new Error("Не удалось сохранить общий план");
+        }
         return json({ ok: true, state, updatedAt, canEdit: true, persistent: true });
       } catch (error) {
         console.error("roadmap_save_failed", error);

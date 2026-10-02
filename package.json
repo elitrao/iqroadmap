@@ -1,0 +1,12 @@
+{
+  "name": "iqroadmap",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-worker.mjs",
+    "preview": "node scripts/preview.mjs",
+    "test": "npm run build && node scripts/validate.mjs",
+    "deploy": "npm run build && npx wrangler@4 deploy"
+  }
+}

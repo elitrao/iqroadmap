@@ -1461,6 +1461,8 @@
     let saveQueue = Promise.resolve();
     let suppressRowClickUntil = 0;
     let roadmapFixedColumnsWidth = 484;
+    let editorKey = '';
+    try { editorKey = sessionStorage.getItem('iqroadmap.editorKey') || ''; } catch {}
 
     const releaseRows = document.querySelector('#releaseRows');
     const monthRow = document.querySelector('#monthRow');
@@ -2287,6 +2289,37 @@
       toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 3200);
     }
 
+    function apiHeaders(extra = {}) {
+      const headers = { ...extra };
+      if (editorKey) headers['x-roadmap-editor-key'] = editorKey;
+      return headers;
+    }
+
+    async function unlockEditing() {
+      const value = window.prompt('Введите ключ редактора');
+      if (value === null) return false;
+      editorKey = value.trim();
+      if (!editorKey) {
+        showToast('Ключ редактора не введён');
+        return false;
+      }
+      try {
+        const response = await fetch('/api/roadmap', { headers: apiHeaders({ accept: 'application/json' }), cache: 'no-store' });
+        const payload = await response.json();
+        if (!response.ok || !payload.canEdit) throw new Error('Неверный ключ редактора');
+        canEdit = true;
+        try { sessionStorage.setItem('iqroadmap.editorKey', editorKey); } catch {}
+        updateEditorAvailability();
+        showToast('Редактирование разблокировано');
+        return true;
+      } catch (error) {
+        editorKey = '';
+        try { sessionStorage.removeItem('iqroadmap.editorKey'); } catch {}
+        showToast(error.message || 'Не удалось разблокировать редактирование');
+        return false;
+      }
+    }
+
     function setEditorOpen(open, releaseId = null) {
       if (open && !canEdit) return;
       if (releaseId && roadmapState.releases.some((release) => release.id === releaseId)) selectedId = releaseId;
@@ -2347,7 +2380,8 @@
       renderMilestones();
     }
 
-    function toggleEditMode() {
+    async function toggleEditMode() {
+      if (!canEdit && !(await unlockEditing())) return;
       setEditMode(!editMode);
     }
 
@@ -2387,8 +2421,8 @@
       editButton.hidden = !canEdit;
       document.body.classList.toggle('can-edit', canEdit);
       roadmapEditButton.classList.toggle('is-locked', !canEdit);
-      roadmapEditButton.setAttribute('aria-disabled', String(!canEdit));
-      roadmapEditButton.title = canEdit ? 'Включить редактирование прямо на карте' : 'Редактирование доступно владельцу';
+      roadmapEditButton.setAttribute('aria-disabled', 'false');
+      roadmapEditButton.title = canEdit ? 'Включить редактирование прямо на карте' : 'Ввести ключ редактора';
       roadmapAddButton.hidden = !canEdit || !editMode;
       roadmapMilestoneButton.hidden = !canEdit || !editMode;
       roadmapSaveButton.hidden = !canEdit || !editMode;
@@ -2412,7 +2446,7 @@
 
     async function loadRoadmap(silent = false) {
       try {
-        const response = await fetch('/api/roadmap', { headers: { accept: 'application/json' }, cache: 'no-store' });
+        const response = await fetch('/api/roadmap', { headers: apiHeaders({ accept: 'application/json' }), cache: 'no-store' });
         const payload = await response.json();
         if (payload.state && (!dirty || silent)) {
           roadmapState = payload.state;
@@ -2443,7 +2477,7 @@
       try {
         const response = await fetch('/api/roadmap', {
           method: 'PUT',
-          headers: { 'content-type': 'application/json', accept: 'application/json' },
+          headers: apiHeaders({ 'content-type': 'application/json', accept: 'application/json' }),
           body: JSON.stringify(roadmapState)
         });
         const payload = await response.json();

@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "iqroadmap",
+  "main": "dist/server/index.js",
+  "compatibility_date": "2026-10-02",
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "ROADMAP_STORE",
+        "class_name": "RoadmapStore"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["RoadmapStore"]
+    }
+  ]
+}
