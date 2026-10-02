@@ -537,8 +537,8 @@
 
     .drag-ghost {
       opacity: .7;
-      transform: translateX(var(--drag-x, 0));
-      transition: none;
+      z-index: 4;
+      transition: none !important;
       will-change: transform;
       box-shadow: 0 0 0 1px var(--bright), 0 18px 34px rgba(0, 0, 0, .35);
     }
@@ -1201,13 +1201,14 @@
 
       bar.addEventListener('pointermove', (event) => {
         if (!bar.hasPointerCapture(event.pointerId)) return;
+        event.preventDefault();
         const weekWidth = (roadmap.clientWidth - 248) / getWeekCount();
         const minDrag = (1 - release.startWeek) * weekWidth;
         const maxDrag = (52 - release.startWeek) * weekWidth;
         const dragDistance = Math.max(minDrag, Math.min(maxDrag, event.clientX - originX));
         deltaWeeks = Math.round(dragDistance / weekWidth);
         moved = moved || Math.abs(dragDistance) > 4;
-        bar.style.setProperty('--drag-x', `${dragDistance}px`);
+        bar.style.transform = `translate3d(${dragDistance}px, -1px, 0)`;
         if (dateLabel) dateLabel.textContent = formatBarRange({ ...release, startWeek: release.startWeek + deltaWeeks });
       });
 
@@ -1215,7 +1216,7 @@
         if (!bar.hasPointerCapture(event.pointerId)) return;
         bar.releasePointerCapture(event.pointerId);
         bar.classList.remove('drag-ghost');
-        bar.style.removeProperty('--drag-x');
+        bar.style.removeProperty('transform');
         if (event.type === 'pointerup' && moved) {
           suppressClick = true;
           suppressRowClickUntil = performance.now() + 400;
