@@ -39,7 +39,9 @@
       --quiet: #777;
       --border: #3d3d3d;
       --border-warm: #604329;
-      --row-label: 248px;
+      --release-column: 112px;
+      --name-column: 300px;
+      --team-column: 72px;
       --week: minmax(52px, 1fr);
       --week-count: 20;
       --radius-lg: 20px;
@@ -185,6 +187,43 @@
       color: #c6bdb5;
       background: var(--surface-warm);
       box-shadow: none;
+    }
+
+    .roadmap-edit-button.is-active {
+      border-color: #cfdbc9;
+      color: #102016;
+      background: #9bc2a4;
+      box-shadow: 0 10px 28px rgba(143, 190, 154, .16);
+    }
+
+    .roadmap-add-button {
+      min-height: 42px;
+      padding: 0 15px;
+      border: 1px dashed var(--primary);
+      border-radius: 10px;
+      color: var(--bright);
+      background: rgba(217, 106, 27, .08);
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .03em;
+    }
+
+    .roadmap-add-button:hover { background: rgba(217, 106, 27, .15); }
+    .roadmap-add-button[hidden] { display: none; }
+
+    .roadmap-save-button {
+      border-style: solid;
+      color: var(--text);
+      background: var(--primary);
+    }
+
+    .roadmap-save-button:disabled {
+      border-color: var(--border);
+      color: var(--quiet);
+      background: #292929;
+      cursor: default;
     }
 
     .live-dot {
@@ -345,14 +384,16 @@
     }
 
     .roadmap {
+      position: relative;
       min-width: 1320px;
     }
 
     .month-row,
     .week-row,
+    .milestone-row,
     .release-row {
       display: grid;
-      grid-template-columns: var(--row-label) repeat(var(--week-count), var(--week));
+      grid-template-columns: var(--release-column) var(--name-column) var(--team-column) repeat(var(--week-count), var(--week));
     }
 
     .month-row {
@@ -372,7 +413,10 @@
       padding: 0 18px;
     }
 
-    .month-label { color: var(--quiet); }
+    .month-label {
+      grid-column: 1 / span 3;
+      color: var(--quiet);
+    }
 
     .month {
       border-left: 1px solid var(--border);
@@ -392,10 +436,19 @@
       font-size: 10px;
     }
 
-    .week-label {
+    .week-label,
+    .name-label,
+    .team-label {
       display: flex;
       align-items: center;
       padding: 0 18px;
+    }
+
+    .name-label { border-left: 1px solid rgba(61, 61, 61, .5); }
+    .team-label {
+      justify-content: center;
+      padding: 0 8px;
+      border-left: 1px solid rgba(61, 61, 61, .5);
     }
 
     .week {
@@ -404,6 +457,122 @@
       justify-content: center;
       border-left: 1px solid rgba(61, 61, 61, .5);
     }
+
+    .milestone-row {
+      min-height: 44px;
+      border-bottom: 1px solid var(--border);
+      color: var(--quiet);
+      background: rgba(24, 24, 24, .28);
+      font-size: 10px;
+    }
+
+    .milestone-caption {
+      grid-column: 1 / span 3;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .milestone-week-cell { border-left: 1px solid rgba(61, 61, 61, .34); }
+
+    .milestone-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .milestone-marker {
+      position: absolute;
+      top: 84px;
+      bottom: 0;
+      width: 0;
+      pointer-events: none;
+    }
+
+    .milestone-line {
+      position: absolute;
+      top: 44px;
+      bottom: 0;
+      left: -1px;
+      width: 2px;
+      background: repeating-linear-gradient(to bottom, rgba(240, 132, 56, .75) 0 6px, transparent 6px 11px);
+      box-shadow: 0 0 14px rgba(217, 106, 27, .16);
+    }
+
+    .milestone-pill {
+      position: absolute;
+      top: 6px;
+      left: 0;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 9px;
+      border: 1px solid rgba(240, 132, 56, .55);
+      border-radius: 9px;
+      color: #f1d2bc;
+      background: #2d231c;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, .3);
+      pointer-events: auto;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    .milestone-pill:focus-visible {
+      outline: 2px solid var(--bright);
+      outline-offset: 2px;
+    }
+
+    .milestone-diamond {
+      width: 8px;
+      height: 8px;
+      flex: 0 0 auto;
+      border: 1px solid var(--bright);
+      background: var(--primary);
+      transform: rotate(45deg);
+    }
+
+    .milestone-title { font-size: 11px; font-weight: 700; }
+    .milestone-input {
+      width: min(210px, 18vw);
+      min-width: 118px;
+      height: 23px;
+      padding: 2px 6px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      outline: none;
+      color: var(--text);
+      background: rgba(255, 255, 255, .035);
+      font: inherit;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .milestone-input:focus { border-color: var(--bright); background: #201d1a; }
+
+    .milestone-grip,
+    .milestone-delete {
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      border: 0;
+      border-radius: 6px;
+      color: #bf9679;
+      background: rgba(255, 255, 255, .04);
+      font: inherit;
+    }
+
+    .milestone-grip { cursor: grab; font-size: 11px; letter-spacing: -2px; }
+    .milestone-grip:active { cursor: grabbing; }
+    .milestone-delete { cursor: pointer; font-size: 14px; }
+    .milestone-delete:hover { color: #ffd2cb; background: rgba(164, 56, 42, .24); }
 
     .release-row {
       position: relative;
@@ -422,7 +591,7 @@
     .release-row:last-child { border-bottom: 0; }
     .release-row:hover { background: rgba(255, 255, 255, .018); }
     .release-row.is-selected { background: rgba(217, 106, 27, .045); }
-    .release-row.is-released { background: rgba(101, 157, 113, .04); }
+    .release-row.is-released .grid-cell.is-complete { background: rgba(101, 157, 113, .075); }
     .release-row.is-released .release-number { color: #bddbc4; }
 
     .release-row:focus-visible {
@@ -430,30 +599,252 @@
       outline-offset: -3px;
     }
 
-    .release-label {
-      grid-column: 1;
+    .release-version-cell,
+    .release-name-cell,
+    .release-team-cell {
       display: flex;
       align-items: center;
-      gap: 14px;
       padding: 14px 18px;
+      min-width: 0;
     }
 
+    .release-version-cell { grid-column: 1; }
+    .release-name-cell {
+      grid-column: 2;
+      gap: 8px;
+      border-left: 1px solid rgba(61, 61, 61, .5);
+    }
+
+    .release-team-cell {
+      grid-column: 3;
+      justify-content: center;
+      gap: 4px;
+      padding: 10px 8px;
+      border-left: 1px solid rgba(61, 61, 61, .5);
+    }
+
+    .team-owner {
+      position: relative;
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      border: 1px solid #4b4b4b;
+      border-radius: 10px;
+      color: #bdbdbd;
+      background: rgba(255, 255, 255, .025);
+      outline: none;
+      transition: transform 160ms ease, border-color 160ms ease, color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .team-owner svg {
+      width: 17px;
+      height: 17px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .team-owner.is-product {
+      border-color: rgba(240, 132, 56, .42);
+      color: #efad7c;
+      background: rgba(217, 106, 27, .1);
+    }
+
+    .team-owner.is-development {
+      border-color: rgba(104, 153, 205, .42);
+      color: #9dc2e7;
+      background: rgba(74, 123, 176, .1);
+    }
+
+    .team-owner::before,
+    .team-owner::after {
+      position: absolute;
+      left: 50%;
+      z-index: 8;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 150ms ease, transform 150ms ease;
+    }
+
+    .team-owner::before {
+      content: '';
+      bottom: calc(100% + 6px);
+      width: 8px;
+      height: 8px;
+      border-right: 1px solid #565656;
+      border-bottom: 1px solid #565656;
+      background: #252525;
+      transform: translate(-50%, 4px) rotate(45deg);
+    }
+
+    .team-owner::after {
+      content: attr(data-tooltip);
+      bottom: calc(100% + 10px);
+      width: max-content;
+      max-width: 220px;
+      padding: 8px 10px;
+      border: 1px solid #565656;
+      border-radius: 8px;
+      color: var(--text);
+      background: #252525;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, .38);
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: 0;
+      text-align: center;
+      white-space: nowrap;
+      transform: translate(-50%, 5px);
+    }
+
+    .team-owner:hover,
+    .team-owner:focus-visible {
+      z-index: 9;
+      transform: translateY(-1px);
+      border-color: currentColor;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, .2);
+    }
+
+    .team-owner:hover::before,
+    .team-owner:hover::after,
+    .team-owner:focus-visible::before,
+    .team-owner:focus-visible::after {
+      opacity: 1;
+    }
+
+    .team-owner:hover::before,
+    .team-owner:focus-visible::before { transform: translate(-50%, 0) rotate(45deg); }
+    .team-owner:hover::after,
+    .team-owner:focus-visible::after { transform: translate(-50%, 0); }
+
+    .team-choice {
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      cursor: pointer;
+      opacity: .48;
+    }
+
+    .team-choice.is-selected {
+      opacity: 1;
+      border-color: currentColor;
+      box-shadow: 0 0 0 2px rgba(240, 132, 56, .12);
+    }
+
+    .team-choice svg { width: 14px; height: 14px; }
+
     .release-number {
-      min-width: 58px;
+      width: 100%;
       color: var(--text);
       font-size: 18px;
       font-weight: 600;
       letter-spacing: -.02em;
+      line-height: 1.28;
+      white-space: nowrap;
     }
 
     .release-name {
-      overflow: hidden;
+      width: 100%;
       color: var(--muted);
       font-size: 12px;
       line-height: 1.35;
-      text-overflow: ellipsis;
       white-space: nowrap;
     }
+
+    .release-inline-input {
+      min-width: 0;
+      padding: 3px 5px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      outline: none;
+      color: inherit;
+      background: transparent;
+      font: inherit;
+    }
+
+    .release-number-input {
+      width: 100%;
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -.02em;
+      line-height: 1.28;
+    }
+
+    .release-order-controls {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 3px;
+      margin-left: 6px;
+    }
+
+    .release-order-button {
+      width: 25px;
+      height: 25px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 1px solid #484848;
+      border-radius: 7px;
+      color: #bdbdbd;
+      background: rgba(255, 255, 255, .025);
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+
+    .release-order-button:hover:not(:disabled) {
+      border-color: var(--bright);
+      color: var(--text);
+      background: rgba(217, 106, 27, .1);
+    }
+
+    .release-order-button:disabled { cursor: default; opacity: .22; }
+
+    .release-name-input {
+      width: 100%;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .release-inline-input:hover,
+    .release-inline-input:focus {
+      border-color: var(--border-warm);
+      background: rgba(217, 106, 27, .08);
+    }
+
+    .delete-stage-button {
+      flex: 0 0 auto;
+      min-height: 28px;
+      padding: 0 9px;
+      border: 1px solid rgba(189, 91, 75, .35);
+      border-radius: 7px;
+      color: #d7a49c;
+      background: rgba(130, 48, 36, .1);
+      cursor: pointer;
+      font: inherit;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .delete-stage-button:hover {
+      border-color: rgba(225, 112, 94, .75);
+      color: #ffd2cb;
+      background: rgba(164, 56, 42, .2);
+    }
+
+    .roadmap-edit-mode .release-version-cell,
+    .roadmap-edit-mode .release-name-cell { cursor: text; }
+    .roadmap-edit-mode .bar { cursor: grab; touch-action: none; }
+    .roadmap-edit-mode .bar:active { cursor: grabbing; }
 
     .grid-cell {
       border-left: 1px solid rgba(61, 61, 61, .5);
@@ -529,7 +920,7 @@
       touch-action: none;
     }
 
-    body.can-edit .release-row .bar:active { cursor: grabbing; }
+    body.roadmap-edit-mode .release-row .bar:active { cursor: grabbing; }
 
     body.can-edit .release-row:hover .bar {
       box-shadow: 0 0 0 1px rgba(240, 132, 56, .32), 0 10px 24px rgba(0, 0, 0, .22);
@@ -972,6 +1363,9 @@
             <span><i class="parallel"></i>Параллельно</span>
             <span><i></i>Запланировано</span>
           </div>
+          <button class="roadmap-add-button" id="roadmapAddButton" type="button" hidden>+ Добавить этап</button>
+          <button class="roadmap-add-button" id="roadmapMilestoneButton" type="button" hidden>+ Майлстоун</button>
+          <button class="roadmap-add-button roadmap-save-button" id="roadmapSaveButton" type="button" hidden disabled>Сохранить</button>
           <button class="roadmap-edit-button is-locked" id="roadmapEditButton" type="button" aria-disabled="true">Редактировать</button>
         </div>
       </div>
@@ -981,7 +1375,9 @@
           <div class="roadmap">
             <div class="month-row" id="monthRow" aria-hidden="true"></div>
             <div class="week-row" id="weekRow" aria-hidden="true"></div>
+            <div class="milestone-row" id="milestoneRow"></div>
             <div id="releaseRows"></div>
+            <div class="milestone-layer" id="milestoneLayer" aria-label="Майлстоуны дорожной карты"></div>
           </div>
         </div>
         <div class="scroll-hint">Проведите по шкале, чтобы увидеть весь план →</div>
@@ -1000,8 +1396,8 @@
       </article>
 
       <div class="footnote">
-        <span>1.4 показана как завершённый цикл; каждый следующий этап занимает две недели.</span>
-        <span id="roadmapActionHint">Нажмите на строку, чтобы посмотреть состав этапа.</span>
+        <span>1.4 показана как завершённый цикл; каждый следующий этап занимает 10 рабочих дней. 31 декабря и 1–11 января не учитываются.</span>
+        <span id="roadmapActionHint">Нажмите на плашку с датой, чтобы открыть этап.</span>
       </div>
     </section>
   </main>
@@ -1020,7 +1416,7 @@
       <span class="editor-footer-copy" id="editorStatus">Изменения ещё не сохранены</span>
       <div class="editor-footer-actions">
         <button class="editor-button" id="addReleaseButton" type="button">+ Этап</button>
-        <button class="editor-button primary" id="saveRoadmapButton" type="button">Сохранить</button>
+        <button class="editor-button primary" id="saveRoadmapButton" type="button">Сохранить и закрыть</button>
       </div>
     </div>
   </aside>
@@ -1028,6 +1424,7 @@
 
   <script>
     const DEFAULT_ROADMAP = __DEFAULT_ROADMAP__;
+    const INITIAL_ROADMAP = __INITIAL_ROADMAP__;
     const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
     const shortMonthNames = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
     const monthTitles = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
@@ -1039,21 +1436,37 @@
       'Запланировано': { tone: '', badge: '', itemState: '' },
       'Цель': { tone: '', badge: '', itemState: '' }
     };
+    const teamTypes = {
+      product: {
+        label: 'Продуктовая команда',
+        icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.2v9.6L12 21l-8-4.2V7.2L12 3Z"></path><path d="m4 7.2 8 4.3 8-4.3M12 11.5V21"></path></svg>'
+      },
+      development: {
+        label: 'Команда разработки',
+        icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 4l-4 16"></path></svg>'
+      }
+    };
 
-    let roadmapState = structuredClone(DEFAULT_ROADMAP);
+    let roadmapState = structuredClone(INITIAL_ROADMAP);
     let selectedId = roadmapState.releases.find((release) => release.status === 'Сейчас')?.id || roadmapState.releases[0].id;
     let canEdit = false;
+    let editMode = false;
     let editorOpen = false;
     let editorFocusId = null;
     let dirty = false;
     let saving = false;
     let lastUpdatedAt = null;
     let toastTimer = null;
+    let changeRevision = 0;
+    let saveQueue = Promise.resolve();
     let suppressRowClickUntil = 0;
+    let roadmapFixedColumnsWidth = 484;
 
     const releaseRows = document.querySelector('#releaseRows');
     const monthRow = document.querySelector('#monthRow');
     const weekRow = document.querySelector('#weekRow');
+    const milestoneRow = document.querySelector('#milestoneRow');
+    const milestoneLayer = document.querySelector('#milestoneLayer');
     const roadmap = document.querySelector('.roadmap');
     const detailTag = document.querySelector('#detailTag');
     const detailTitle = document.querySelector('#detailTitle');
@@ -1064,6 +1477,9 @@
     const syncText = document.querySelector('#syncText');
     const editButton = document.querySelector('#editRoadmapButton');
     const roadmapEditButton = document.querySelector('#roadmapEditButton');
+    const roadmapAddButton = document.querySelector('#roadmapAddButton');
+    const roadmapMilestoneButton = document.querySelector('#roadmapMilestoneButton');
+    const roadmapSaveButton = document.querySelector('#roadmapSaveButton');
     const roadmapActionHint = document.querySelector('#roadmapActionHint');
     const editorPanel = document.querySelector('#editorPanel');
     const editorBackdrop = document.querySelector('#editorBackdrop');
@@ -1074,6 +1490,7 @@
     const editorStatus = document.querySelector('#editorStatus');
     const saveButton = document.querySelector('#saveRoadmapButton');
     const toast = document.querySelector('#toast');
+    const roadmapUpdates = typeof BroadcastChannel === 'function' ? new BroadcastChannel('ai-roadmap-updates') : null;
 
     function parseDate(value) {
       return new Date(`${value}T12:00:00Z`);
@@ -1089,10 +1506,64 @@
       return String(value).padStart(2, '0');
     }
 
+    function isBusinessDay(date) {
+      const day = date.getUTCDay();
+      const month = date.getUTCMonth();
+      const dateOfMonth = date.getUTCDate();
+      const isWeekend = day === 0 || day === 6;
+      const isNewYearHoliday = (month === 11 && dateOfMonth === 31) || (month === 0 && dateOfMonth >= 1 && dateOfMonth <= 11);
+      return !isWeekend && !isNewYearHoliday;
+    }
+
+    function nextBusinessDay(date) {
+      let next = new Date(date);
+      while (!isBusinessDay(next)) next = addDays(next, 1);
+      return next;
+    }
+
+    function addBusinessDays(date, amount) {
+      let next = new Date(date);
+      let remaining = amount;
+      while (remaining > 0) {
+        next = addDays(next, 1);
+        if (isBusinessDay(next)) remaining -= 1;
+      }
+      return next;
+    }
+
+    function buildSchedule() {
+      const base = parseDate(roadmapState.baseDate);
+      const groups = new Map();
+      roadmapState.releases.forEach((release) => {
+        if (!groups.has(release.startWeek)) groups.set(release.startWeek, []);
+        groups.get(release.startWeek).push(release);
+      });
+
+      const schedule = new Map();
+      let nextAvailable = null;
+      [...groups.entries()].sort((a, b) => a[0] - b[0]).forEach(([startWeek, releases]) => {
+        const nominalStart = nextBusinessDay(addDays(base, (startWeek - 1) * 7));
+        const start = nextAvailable && nominalStart < nextAvailable ? new Date(nextAvailable) : nominalStart;
+        let groupEnd = start;
+        releases.forEach((release) => {
+          const end = addBusinessDays(start, release.duration * 5 - 1);
+          if (end > groupEnd) groupEnd = end;
+          const visualStartWeek = Math.floor((start - base) / 604800000) + 1;
+          const visualEndWeek = Math.floor((end - base) / 604800000) + 1;
+          schedule.set(release.id, {
+            start,
+            end,
+            visualStartWeek,
+            visualDurationWeeks: visualEndWeek - visualStartWeek + 1
+          });
+        });
+        nextAvailable = nextBusinessDay(addDays(groupEnd, 1));
+      });
+      return schedule;
+    }
+
     function releaseDates(release) {
-      const start = addDays(parseDate(roadmapState.baseDate), (release.startWeek - 1) * 7);
-      const end = addDays(start, release.duration * 7 - 1);
-      return { start, end };
+      return buildSchedule().get(release.id);
     }
 
     function formatRange(release) {
@@ -1121,15 +1592,29 @@
     }
 
     function getWeekCount() {
-      return Math.max(20, ...roadmapState.releases.map((release) => release.startWeek + release.duration - 1));
+      const releaseWeeks = [...buildSchedule().values()].map((entry) => entry.visualStartWeek + entry.visualDurationWeeks - 1);
+      const milestoneWeeks = (roadmapState.milestones || []).map((milestone) => Number(milestone.week) || 1);
+      return Math.max(20, ...releaseWeeks, ...milestoneWeeks);
+    }
+
+    function updateAdaptiveColumns(weekCount = getWeekCount()) {
+      const longestVersion = Math.max(0, ...roadmapState.releases.map((release) => String(release.version || '').length));
+      const longestName = Math.max(0, ...roadmapState.releases.map((release) => String(release.name || '').length));
+      const releaseWidth = Math.min(640, Math.max(112, Math.ceil(longestVersion * 10.5 + (editMode ? 116 : 44))));
+      const nameWidth = Math.min(760, Math.max(300, Math.ceil(longestName * 7.2 + (editMode ? 124 : 52))));
+      roadmapFixedColumnsWidth = releaseWidth + nameWidth + 72;
+      roadmap.style.setProperty('--release-column', `${releaseWidth}px`);
+      roadmap.style.setProperty('--name-column', `${nameWidth}px`);
+      roadmap.style.minWidth = `${Math.max(1320, roadmapFixedColumnsWidth + weekCount * 54)}px`;
     }
 
     function renderHeaders() {
       const weekCount = getWeekCount();
+      updateAdaptiveColumns(weekCount);
       roadmap.style.setProperty('--week-count', weekCount);
-      roadmap.style.minWidth = `${Math.max(1320, 248 + weekCount * 54)}px`;
       monthRow.replaceChildren();
       weekRow.replaceChildren();
+      milestoneRow.replaceChildren();
 
       const yearLabel = document.createElement('div');
       yearLabel.className = 'month-label';
@@ -1140,22 +1625,42 @@
 
       const weekLabel = document.createElement('div');
       weekLabel.className = 'week-label';
-      weekLabel.textContent = 'Неделя';
+      weekLabel.textContent = 'Релиз';
       weekRow.appendChild(weekLabel);
+
+      const nameLabel = document.createElement('div');
+      nameLabel.className = 'name-label';
+      nameLabel.textContent = 'Название';
+      weekRow.appendChild(nameLabel);
+
+      const teamLabel = document.createElement('div');
+      teamLabel.className = 'team-label';
+      teamLabel.textContent = 'Кто';
+      weekRow.appendChild(teamLabel);
+
+      const milestoneCaption = document.createElement('div');
+      milestoneCaption.className = 'milestone-caption';
+      milestoneCaption.textContent = 'Майлстоуны';
+      milestoneRow.appendChild(milestoneCaption);
 
       const groups = [];
       for (let index = 0; index < weekCount; index += 1) {
         const start = addDays(parseDate(roadmapState.baseDate), index * 7);
-        const end = addDays(start, 6);
+        const end = addDays(start, 4);
         const key = `${start.getUTCFullYear()}-${start.getUTCMonth()}`;
         const current = groups.at(-1);
         if (current?.key === key) current.count += 1;
-        else groups.push({ key, month: start.getUTCMonth(), year: start.getUTCFullYear(), start: index + 2, count: 1 });
+        else groups.push({ key, month: start.getUTCMonth(), year: start.getUTCFullYear(), start: index + 4, count: 1 });
 
         const cell = document.createElement('div');
         cell.className = 'week';
         cell.textContent = `${pad(start.getUTCDate())}–${pad(end.getUTCDate())}`;
         weekRow.appendChild(cell);
+
+        const milestoneCell = document.createElement('div');
+        milestoneCell.className = 'milestone-week-cell';
+        milestoneCell.style.gridColumn = String(index + 4);
+        milestoneRow.appendChild(milestoneCell);
       }
 
       groups.forEach((group) => {
@@ -1173,6 +1678,18 @@
       renderDetails();
     }
 
+    function moveReleaseRow(id, direction) {
+      const from = roadmapState.releases.findIndex((release) => release.id === id);
+      const to = from + direction;
+      if (from < 0 || to < 0 || to >= roadmapState.releases.length) return;
+      const [moved] = roadmapState.releases.splice(from, 1);
+      roadmapState.releases.splice(to, 0, moved);
+      selectedId = id;
+      markDirty();
+      renderAll();
+      showToast('Порядок релизов изменён. Нажмите «Сохранить»');
+    }
+
     function createTextElement(className, text) {
       const element = document.createElement('span');
       element.className = className;
@@ -1180,13 +1697,167 @@
       return element;
     }
 
+    function normalizedTeam(value) {
+      return teamTypes[value] ? value : 'development';
+    }
+
+    function createTeamOwner(team, interactive = false) {
+      const teamKey = normalizedTeam(team);
+      const meta = teamTypes[teamKey];
+      const element = document.createElement(interactive ? 'button' : 'span');
+      element.className = `team-owner is-${teamKey}${interactive ? ' team-choice' : ''}`;
+      element.dataset.tooltip = meta.label;
+      element.setAttribute('aria-label', meta.label);
+      element.innerHTML = meta.icon;
+      if (interactive) element.type = 'button';
+      else element.tabIndex = 0;
+      return element;
+    }
+
+    function moveMilestone(milestone, week) {
+      milestone.week = Math.max(1, Math.min(52, week));
+      markDirty();
+      renderAll();
+    }
+
+    function attachMilestoneDrag(markerElement, grip, milestone) {
+      let startX = 0;
+      let startWeek = milestone.week;
+      let previewWeek = startWeek;
+
+      grip.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0 || saving) return;
+        event.preventDefault();
+        event.stopPropagation();
+        startX = event.clientX;
+        startWeek = milestone.week;
+        previewWeek = startWeek;
+        grip.setPointerCapture(event.pointerId);
+      });
+
+      grip.addEventListener('pointermove', (event) => {
+        if (!grip.hasPointerCapture(event.pointerId)) return;
+        event.preventDefault();
+        const weekWidth = (roadmap.clientWidth - roadmapFixedColumnsWidth) / getWeekCount();
+        const deltaWeeks = Math.round((event.clientX - startX) / weekWidth);
+        previewWeek = Math.max(1, Math.min(52, startWeek + deltaWeeks));
+        markerElement.style.left = `${roadmapFixedColumnsWidth + previewWeek * weekWidth}px`;
+      });
+
+      const finish = (event) => {
+        if (!grip.hasPointerCapture(event.pointerId)) return;
+        grip.releasePointerCapture(event.pointerId);
+        if (event.type === 'pointerup' && previewWeek !== startWeek) {
+          moveMilestone(milestone, previewWeek);
+          showToast('Майлстоун перемещён. Нажмите «Сохранить»');
+        } else {
+          renderMilestones();
+        }
+      };
+      grip.addEventListener('pointerup', finish);
+      grip.addEventListener('pointercancel', finish);
+      grip.addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+        event.preventDefault();
+        moveMilestone(milestone, milestone.week + (event.key === 'ArrowRight' ? 1 : -1));
+      });
+    }
+
+    function renderMilestones() {
+      milestoneLayer.replaceChildren();
+      const weekCount = getWeekCount();
+      const weekWidth = (roadmap.clientWidth - roadmapFixedColumnsWidth) / weekCount;
+      (roadmapState.milestones || []).forEach((milestone) => {
+        const marker = document.createElement('div');
+        marker.className = 'milestone-marker';
+        marker.dataset.id = milestone.id;
+        marker.style.left = `${roadmapFixedColumnsWidth + milestone.week * weekWidth}px`;
+
+        const line = document.createElement('span');
+        line.className = 'milestone-line';
+        marker.appendChild(line);
+
+        const pill = document.createElement('div');
+        pill.className = 'milestone-pill';
+        pill.title = milestone.label;
+        pill.appendChild(createTextElement('milestone-diamond', ''));
+
+        if (editMode && canEdit) {
+          const grip = document.createElement('span');
+          grip.className = 'milestone-grip';
+          grip.tabIndex = 0;
+          grip.setAttribute('role', 'button');
+          grip.setAttribute('aria-label', `Переместить майлстоун ${milestone.label}`);
+          grip.textContent = '⠿';
+          pill.appendChild(grip);
+
+          const input = document.createElement('input');
+          input.className = 'milestone-input';
+          input.value = milestone.label;
+          input.maxLength = 60;
+          input.setAttribute('aria-label', 'Название майлстоуна');
+          input.addEventListener('input', () => {
+            milestone.label = input.value;
+            pill.title = milestone.label;
+            markDirty();
+          });
+          pill.appendChild(input);
+
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'milestone-delete';
+          remove.textContent = '×';
+          remove.setAttribute('aria-label', `Удалить майлстоун ${milestone.label}`);
+          remove.addEventListener('click', () => {
+            roadmapState.milestones = roadmapState.milestones.filter((item) => item.id !== milestone.id);
+            markDirty();
+            renderAll();
+          });
+          pill.appendChild(remove);
+          attachMilestoneDrag(marker, grip, milestone);
+        } else {
+          pill.tabIndex = 0;
+          pill.setAttribute('role', 'note');
+          pill.setAttribute('aria-label', milestone.label);
+          pill.appendChild(createTextElement('milestone-title', milestone.label));
+        }
+
+        marker.appendChild(pill);
+        milestoneLayer.appendChild(marker);
+      });
+    }
+
     function attachBarDrag(bar, release) {
-      if (!canEdit) return;
       let originX = 0;
       let deltaWeeks = 0;
       let moved = false;
       let suppressClick = false;
       const dateLabel = bar.querySelector('.bar-date');
+
+      if (canEdit) {
+        bar.tabIndex = 0;
+        bar.setAttribute('role', 'button');
+        bar.setAttribute('aria-label', `Открыть этап ${release.version}`);
+        bar.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if (suppressClick) {
+            suppressClick = false;
+            return;
+          }
+          selectRelease(release.id);
+          setEditorOpen(true, release.id);
+        });
+        bar.addEventListener('keydown', (event) => {
+          if (!['Enter', ' '].includes(event.key)) return;
+          event.preventDefault();
+          event.stopPropagation();
+          selectRelease(release.id);
+          setEditorOpen(true, release.id);
+        });
+      }
+
+      if (!canEdit || !editMode) return;
 
       bar.addEventListener('pointerdown', (event) => {
         if (event.button !== 0 || saving) return;
@@ -1202,14 +1873,19 @@
       bar.addEventListener('pointermove', (event) => {
         if (!bar.hasPointerCapture(event.pointerId)) return;
         event.preventDefault();
-        const weekWidth = (roadmap.clientWidth - 248) / getWeekCount();
+        const weekWidth = (roadmap.clientWidth - roadmapFixedColumnsWidth) / getWeekCount();
         const minDrag = (1 - release.startWeek) * weekWidth;
         const maxDrag = (52 - release.startWeek) * weekWidth;
         const dragDistance = Math.max(minDrag, Math.min(maxDrag, event.clientX - originX));
         deltaWeeks = Math.round(dragDistance / weekWidth);
         moved = moved || Math.abs(dragDistance) > 4;
         bar.style.transform = `translate3d(${dragDistance}px, -1px, 0)`;
-        if (dateLabel) dateLabel.textContent = formatBarRange({ ...release, startWeek: release.startWeek + deltaWeeks });
+        if (dateLabel) {
+          const originalStartWeek = release.startWeek;
+          release.startWeek = originalStartWeek + deltaWeeks;
+          dateLabel.textContent = formatBarRange(release);
+          release.startWeek = originalStartWeek;
+        }
       });
 
       const finishDrag = (event) => {
@@ -1224,39 +1900,36 @@
           selectedId = release.id;
           markDirty();
           renderAll();
-          void saveRoadmap(`Срок «${release.version}» обновлён для всех посетителей`);
+          showToast('Срок изменён. Нажмите «Сохранить»');
           return;
         }
         if (dateLabel) dateLabel.textContent = formatBarRange(release);
-        if (event.type === 'pointerup') {
-          suppressClick = true;
-          selectRelease(release.id);
-          setEditorOpen(true, release.id);
-        }
+        if (event.type === 'pointerup') selectRelease(release.id);
       };
       bar.addEventListener('pointerup', finishDrag);
       bar.addEventListener('pointercancel', finishDrag);
-      bar.addEventListener('click', (event) => {
-        if (!suppressClick) return;
-        event.preventDefault();
-        event.stopPropagation();
-        suppressClick = false;
-      });
     }
 
     function renderRoadmap() {
       const weekCount = getWeekCount();
+      const schedule = buildSchedule();
       releaseRows.replaceChildren();
-      roadmapState.releases.forEach((release) => {
-        const row = document.createElement('button');
-        row.type = 'button';
+      roadmapState.releases.forEach((release, releaseIndex) => {
+        const timing = schedule.get(release.id);
+        const row = document.createElement('div');
         row.className = `release-row${release.id === selectedId ? ' is-selected' : ''}${canEdit ? ' is-editable' : ''}${release.tone === 'released' ? ' is-released' : ''}`;
+        row.dataset.id = release.id;
+        row.tabIndex = 0;
+        row.setAttribute('role', 'group');
         row.setAttribute('aria-label', `${release.version}, ${release.name}, ${formatRange(release)}`);
-        row.setAttribute('aria-pressed', String(release.id === selectedId));
         row.addEventListener('click', () => {
           if (performance.now() < suppressRowClickUntil) return;
           selectRelease(release.id);
-          if (canEdit) setEditorOpen(true, release.id);
+        });
+        row.addEventListener('keydown', (event) => {
+          if (event.target !== row || !['Enter', ' '].includes(event.key)) return;
+          event.preventDefault();
+          selectRelease(release.id);
         });
 
         const indicator = document.createElement('span');
@@ -1264,25 +1937,150 @@
         indicator.setAttribute('aria-hidden', 'true');
         row.appendChild(indicator);
 
-        const label = document.createElement('span');
-        label.className = 'release-label';
-        label.appendChild(createTextElement('release-number', release.rowLabel || release.version));
-        label.appendChild(createTextElement('release-name', release.name));
-        row.appendChild(label);
+        const versionCell = document.createElement('span');
+        versionCell.className = 'release-version-cell';
+        const nameCell = document.createElement('span');
+        nameCell.className = 'release-name-cell';
+        if (editMode && canEdit) {
+          const version = document.createElement('input');
+          version.className = 'release-inline-input release-number-input';
+          version.value = release.version;
+          version.maxLength = 50;
+          version.setAttribute('aria-label', `Версия этапа ${release.version}`);
+          version.addEventListener('click', (event) => event.stopPropagation());
+          version.addEventListener('pointerdown', (event) => event.stopPropagation());
+          version.addEventListener('input', () => {
+            release.version = version.value;
+            release.rowLabel = version.value;
+            updateAdaptiveColumns();
+            renderMilestones();
+            markDirty();
+            renderDetails();
+            renderSummary();
+          });
+          version.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') { event.preventDefault(); version.blur(); }
+          });
+
+          const name = document.createElement('input');
+          name.className = 'release-inline-input release-name-input';
+          name.value = release.name;
+          name.maxLength = 100;
+          name.setAttribute('aria-label', `Название этапа ${release.version}`);
+          name.addEventListener('click', (event) => event.stopPropagation());
+          name.addEventListener('pointerdown', (event) => event.stopPropagation());
+          name.addEventListener('input', () => {
+            release.name = name.value;
+            updateAdaptiveColumns();
+            renderMilestones();
+            markDirty();
+            renderDetails();
+          });
+          name.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') { event.preventDefault(); name.blur(); }
+          });
+          versionCell.appendChild(version);
+          const orderControls = document.createElement('span');
+          orderControls.className = 'release-order-controls';
+          const moveUp = document.createElement('button');
+          moveUp.type = 'button';
+          moveUp.className = 'release-order-button';
+          moveUp.textContent = '↑';
+          moveUp.disabled = releaseIndex === 0;
+          moveUp.setAttribute('aria-label', `Переместить ${release.version} выше`);
+          moveUp.addEventListener('pointerdown', (event) => event.stopPropagation());
+          moveUp.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            moveReleaseRow(release.id, -1);
+          });
+          const moveDown = document.createElement('button');
+          moveDown.type = 'button';
+          moveDown.className = 'release-order-button';
+          moveDown.textContent = '↓';
+          moveDown.disabled = releaseIndex === roadmapState.releases.length - 1;
+          moveDown.setAttribute('aria-label', `Переместить ${release.version} ниже`);
+          moveDown.addEventListener('pointerdown', (event) => event.stopPropagation());
+          moveDown.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            moveReleaseRow(release.id, 1);
+          });
+          orderControls.append(moveUp, moveDown);
+          versionCell.appendChild(orderControls);
+          nameCell.appendChild(name);
+
+          const removeStage = document.createElement('button');
+          removeStage.type = 'button';
+          removeStage.className = 'delete-stage-button';
+          removeStage.textContent = 'Удалить';
+          removeStage.setAttribute('aria-label', `Удалить этап ${release.version}`);
+          removeStage.addEventListener('pointerdown', (event) => event.stopPropagation());
+          removeStage.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (roadmapState.releases.length === 1) {
+              showToast('На карте должен остаться хотя бы один этап');
+              return;
+            }
+            if (!window.confirm(`Удалить этап «${release.version}»?`)) return;
+            const releaseIndex = roadmapState.releases.findIndex((item) => item.id === release.id);
+            roadmapState.releases = roadmapState.releases.filter((item) => item.id !== release.id);
+            if (selectedId === release.id) {
+              const fallback = roadmapState.releases[Math.min(releaseIndex, roadmapState.releases.length - 1)];
+              selectedId = fallback.id;
+            }
+            markDirty();
+            editorStatus.textContent = 'Этап удалён. Сохраните изменения';
+            renderAll();
+            showToast('Этап удалён с карты. Нажмите «Сохранить»');
+          });
+          nameCell.appendChild(removeStage);
+        } else {
+          versionCell.appendChild(createTextElement('release-number', release.version));
+          nameCell.appendChild(createTextElement('release-name', release.name));
+        }
+        row.append(versionCell, nameCell);
+
+        const teamCell = document.createElement('span');
+        teamCell.className = 'release-team-cell';
+        if (editMode && canEdit) {
+          Object.keys(teamTypes).forEach((teamKey) => {
+            const choice = createTeamOwner(teamKey, true);
+            const selected = normalizedTeam(release.team) === teamKey;
+            choice.classList.toggle('is-selected', selected);
+            choice.setAttribute('aria-pressed', String(selected));
+            choice.addEventListener('pointerdown', (event) => event.stopPropagation());
+            choice.addEventListener('click', (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              release.team = teamKey;
+              markDirty();
+              renderRoadmap();
+            });
+            teamCell.appendChild(choice);
+          });
+        } else {
+          teamCell.appendChild(createTeamOwner(release.team));
+        }
+        row.appendChild(teamCell);
 
         for (let week = 0; week < weekCount; week += 1) {
           const cell = document.createElement('span');
-          cell.className = 'grid-cell';
-          cell.style.gridColumn = String(week + 2);
+          const isComplete = release.tone === 'released'
+            && week + 1 >= timing.visualStartWeek
+            && week + 1 < timing.visualStartWeek + timing.visualDurationWeeks;
+          cell.className = `grid-cell${isComplete ? ' is-complete' : ''}`;
+          cell.style.gridColumn = String(week + 4);
           cell.setAttribute('aria-hidden', 'true');
           row.appendChild(cell);
         }
 
         const bar = document.createElement('span');
         bar.className = `bar ${release.tone || ''}`;
-        bar.style.gridColumn = `${release.startWeek + 1} / span ${release.duration}`;
-        bar.title = canEdit
-          ? `${formatRange(release)} · Нажмите для редактирования или перетащите на другую неделю`
+        bar.style.gridColumn = `${timing.visualStartWeek + 3} / span ${timing.visualDurationWeeks}`;
+        bar.title = canEdit && editMode
+          ? `${formatRange(release)} · Перетащите на другую неделю или нажмите для подробного редактирования`
           : formatRange(release);
         bar.appendChild(createTextElement('bar-date', formatBarRange(release)));
         attachBarDrag(bar, release);
@@ -1369,7 +2167,7 @@
         const version = document.createElement('input');
         version.value = release.version;
         version.maxLength = 50;
-        version.addEventListener('input', () => { release.version = version.value; markDirty(); renderRoadmap(); renderDetails(); renderSummary(); });
+        version.addEventListener('input', () => { release.version = version.value; release.rowLabel = version.value; markDirty(); renderRoadmap(); renderDetails(); renderSummary(); });
         fields.appendChild(makeField('Версия / этап', version));
 
         const name = document.createElement('input');
@@ -1417,13 +2215,32 @@
         statusField.classList.add('field-wide');
         fields.appendChild(statusField);
 
+        const team = document.createElement('select');
+        Object.entries(teamTypes).forEach(([value, meta]) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = meta.label;
+          option.selected = value === normalizedTeam(release.team);
+          team.appendChild(option);
+        });
+        team.addEventListener('change', () => {
+          release.team = team.value;
+          markDirty();
+          renderRoadmap();
+        });
+        fields.appendChild(makeField('Команда', team));
+
         const itemsLabel = document.createElement('label');
         itemsLabel.className = 'field-wide';
         itemsLabel.appendChild(createTextElement('', 'Состав этапа · по одному пункту на строку'));
         const items = document.createElement('textarea');
         items.value = (release.items || []).join('\n');
         items.maxLength = 1600;
-        items.addEventListener('input', () => { release.items = items.value.split('\n').map((item) => item.trim()).filter(Boolean).slice(0, 10); markDirty(); renderDetails(); });
+        items.addEventListener('input', () => {
+          release.items = items.value.split('\n').map((item) => item.trim()).filter(Boolean).slice(0, 10);
+          markDirty();
+          renderDetails();
+        });
         itemsLabel.appendChild(items);
         fields.appendChild(itemsLabel);
 
@@ -1449,6 +2266,7 @@
     function renderAll() {
       renderHeaders();
       renderRoadmap();
+      renderMilestones();
       renderDetails();
       renderSummary();
       if (editorOpen) renderEditor();
@@ -1456,7 +2274,10 @@
 
     function markDirty() {
       dirty = true;
+      changeRevision += 1;
       editorStatus.textContent = 'Есть несохранённые изменения';
+      roadmapSaveButton.disabled = false;
+      roadmapSaveButton.textContent = 'Сохранить';
     }
 
     function showToast(message) {
@@ -1499,15 +2320,81 @@
       setEditorOpen(true);
     }
 
+    function setEditMode(enabled) {
+      if (enabled && !canEdit) {
+        showToast('Редактирование доступно только владельцу сайта');
+        return;
+      }
+      if (!enabled && dirty) {
+        showToast('Сначала сохраните изменения');
+        return;
+      }
+      editMode = enabled;
+      document.body.classList.toggle('roadmap-edit-mode', editMode);
+      roadmapAddButton.hidden = !editMode;
+      roadmapMilestoneButton.hidden = !editMode;
+      roadmapSaveButton.hidden = !editMode;
+      roadmapEditButton.classList.toggle('is-active', editMode);
+      roadmapEditButton.textContent = editMode ? 'Готово' : 'Редактировать';
+      if (!editButton.hidden) editButton.textContent = editMode ? 'Готово' : 'Редактировать';
+      roadmapActionHint.textContent = editMode
+        ? 'Меняйте названия и команду прямо в строках, перетаскивайте плашки по шкале.'
+        : canEdit
+          ? 'Нажмите «Редактировать», чтобы изменить названия и сроки.'
+          : 'Нажмите на плашку с датой, чтобы открыть этап.';
+      updateAdaptiveColumns();
+      renderRoadmap();
+      renderMilestones();
+    }
+
+    function toggleEditMode() {
+      setEditMode(!editMode);
+    }
+
+    function addReleaseInline() {
+      if (!canEdit || !editMode) return;
+      const startWeek = Math.min(52, Math.max(...roadmapState.releases.map((release) => release.startWeek + release.duration)));
+      const id = `release-${Date.now().toString(36)}`;
+      roadmapState.releases.push({ id, version: 'Новый этап', rowLabel: 'Новый этап', name: 'Введите название', team: 'development', startWeek, duration: 2, status: 'Запланировано', tone: '', badge: '', itemState: '', items: ['Первый результат этапа'] });
+      selectedId = id;
+      markDirty();
+      renderAll();
+      requestAnimationFrame(() => {
+        const input = releaseRows.querySelector(`[data-id="${id}"] .release-number-input`);
+        input?.focus();
+        input?.select();
+      });
+    }
+
+    function addMilestoneInline() {
+      if (!canEdit || !editMode) return;
+      const selected = roadmapState.releases.find((release) => release.id === selectedId) || roadmapState.releases[0];
+      const timing = selected ? buildSchedule().get(selected.id) : null;
+      const week = timing ? timing.visualStartWeek + timing.visualDurationWeeks - 1 : 2;
+      const id = `milestone-${Date.now().toString(36)}`;
+      if (!Array.isArray(roadmapState.milestones)) roadmapState.milestones = [];
+      roadmapState.milestones.push({ id, label: 'Конец спринта', week: Math.max(1, Math.min(52, week)) });
+      markDirty();
+      renderAll();
+      requestAnimationFrame(() => {
+        const input = milestoneLayer.querySelector(`[data-id="${id}"] .milestone-input`);
+        input?.focus();
+        input?.select();
+      });
+    }
+
     function updateEditorAvailability() {
       editButton.hidden = !canEdit;
       document.body.classList.toggle('can-edit', canEdit);
       roadmapEditButton.classList.toggle('is-locked', !canEdit);
       roadmapEditButton.setAttribute('aria-disabled', String(!canEdit));
-      roadmapEditButton.title = canEdit ? 'Открыть редактор дорожной карты' : 'Редактирование доступно владельцу';
+      roadmapEditButton.title = canEdit ? 'Включить редактирование прямо на карте' : 'Редактирование доступно владельцу';
+      roadmapAddButton.hidden = !canEdit || !editMode;
+      roadmapMilestoneButton.hidden = !canEdit || !editMode;
+      roadmapSaveButton.hidden = !canEdit || !editMode;
       roadmapActionHint.textContent = canEdit
-        ? 'Нажмите на релиз для редактирования или перетащите плашку на нужную неделю.'
-        : 'Нажмите на строку, чтобы посмотреть состав этапа.';
+        ? 'Нажмите «Редактировать», чтобы изменить названия и сроки.'
+        : 'Нажмите на плашку с датой, чтобы открыть этап.';
     }
 
     function updateSyncText(persistent) {
@@ -1543,11 +2430,15 @@
       }
     }
 
-    async function saveRoadmap(successMessage = 'Дорожная карта обновлена для всех посетителей') {
-      if (!canEdit || saving) return;
+    async function performRoadmapSave(successMessage, options) {
+      if (!canEdit || !dirty) return;
+      const { renderAfterSave = true, showConfirmation = true } = options;
+      const revisionAtStart = changeRevision;
       saving = true;
       saveButton.disabled = true;
       saveButton.textContent = 'Сохраняем…';
+      roadmapSaveButton.disabled = true;
+      roadmapSaveButton.textContent = 'Сохраняем…';
       editorStatus.textContent = 'Сохраняем общий план';
       try {
         const response = await fetch('/api/roadmap', {
@@ -1557,32 +2448,68 @@
         });
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || 'Не удалось сохранить изменения');
-        roadmapState = payload.state;
         lastUpdatedAt = payload.updatedAt;
-        dirty = false;
-        editorStatus.textContent = 'Все изменения сохранены';
         updateSyncText(true);
-        renderAll();
-        showToast(successMessage);
+        if (changeRevision === revisionAtStart) {
+          roadmapState = payload.state;
+          dirty = false;
+          editorStatus.textContent = 'Все изменения сохранены';
+          roadmapSaveButton.disabled = true;
+          roadmapSaveButton.textContent = 'Сохранено';
+          if (renderAfterSave) renderAll();
+          if (showConfirmation) showToast(successMessage);
+          roadmapUpdates?.postMessage({ type: 'roadmap-updated', updatedAt: lastUpdatedAt });
+        } else {
+          editorStatus.textContent = 'Есть новые несохранённые изменения';
+          roadmapSaveButton.disabled = false;
+          roadmapSaveButton.textContent = 'Сохранить';
+        }
       } catch (error) {
         editorStatus.textContent = 'Изменения не сохранены';
         showToast(error.message || 'Не удалось сохранить изменения');
       } finally {
         saving = false;
         saveButton.disabled = false;
-        saveButton.textContent = 'Сохранить';
+        saveButton.textContent = 'Сохранить и закрыть';
+        if (dirty) {
+          roadmapSaveButton.disabled = false;
+          roadmapSaveButton.textContent = 'Сохранить';
+        }
       }
     }
 
-    editButton.addEventListener('click', requestEditorOpen);
-    roadmapEditButton.addEventListener('click', requestEditorOpen);
+    function saveRoadmap(successMessage = 'Дорожная карта обновлена для всех посетителей', options = {}) {
+      const task = saveQueue.then(() => performRoadmapSave(successMessage, options));
+      saveQueue = task.catch(() => {});
+      return task;
+    }
+
+    editButton.addEventListener('click', toggleEditMode);
+    roadmapEditButton.addEventListener('click', toggleEditMode);
+    roadmapAddButton.addEventListener('click', addReleaseInline);
+    roadmapMilestoneButton.addEventListener('click', addMilestoneInline);
+    roadmapSaveButton.addEventListener('click', async () => {
+      if (!dirty) {
+        showToast('Нет несохранённых изменений');
+        return;
+      }
+      await saveRoadmap();
+    });
     document.querySelector('#closeEditorButton').addEventListener('click', () => setEditorOpen(false));
     editorBackdrop.addEventListener('click', () => setEditorOpen(false));
-    saveButton.addEventListener('click', () => saveRoadmap());
+    saveButton.addEventListener('click', async () => {
+      if (!dirty && !saving) {
+        showToast('Все изменения уже сохранены');
+        setEditorOpen(false);
+        return;
+      }
+      await saveRoadmap();
+      if (!dirty) setEditorOpen(false);
+    });
     document.querySelector('#addReleaseButton').addEventListener('click', () => {
       const startWeek = Math.min(52, Math.max(...roadmapState.releases.map((release) => release.startWeek + release.duration)));
       const id = `release-${Date.now().toString(36)}`;
-      roadmapState.releases.push({ id, version: 'Новый этап', rowLabel: '', name: 'Без названия', startWeek, duration: 2, status: 'Запланировано', tone: '', badge: '', itemState: '', items: ['Первый результат этапа'] });
+      roadmapState.releases.push({ id, version: 'Новый этап', rowLabel: '', name: 'Без названия', team: 'development', startWeek, duration: 2, status: 'Запланировано', tone: '', badge: '', itemState: '', items: ['Первый результат этапа'] });
       selectedId = id;
       editorFocusId = id;
       editorTitle.textContent = 'Редактирование · Новый этап';
@@ -1592,11 +2519,15 @@
       editorScroll.scrollTo({ top: 0, behavior: 'smooth' });
     });
     document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && editorOpen) setEditorOpen(false); });
+    window.addEventListener('resize', () => requestAnimationFrame(renderMilestones));
     window.addEventListener('beforeunload', (event) => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
+    roadmapUpdates?.addEventListener('message', (event) => {
+      if (event.data?.type === 'roadmap-updated' && !dirty && !saving) void loadRoadmap(true);
+    });
 
     renderAll();
     loadRoadmap();
-    setInterval(() => { if (!dirty && !editorOpen) loadRoadmap(true); }, 15000);
+    setInterval(() => { if (!dirty && !editorOpen) loadRoadmap(true); }, 2500);
   </script>
 </body>
 </html>

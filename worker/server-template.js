@@ -45,11 +45,13 @@ function validateState(input) {
     const items = Array.isArray(release.items)
       ? release.items.map((item) => cleanText(item, 160)).filter(Boolean).slice(0, 10)
       : [];
+    const fallbackTeam = id === "new-user-journey" ? "product" : "development";
     return {
       id,
       version: cleanText(release.version, 50) || "Новый этап",
       rowLabel: cleanText(release.rowLabel, 24),
       name: cleanText(release.name, 100) || "Без названия",
+      team: ["product", "development"].includes(release.team) ? release.team : fallbackTeam,
       startWeek,
       duration,
       status: cleanText(release.status, 30) || "Запланировано",
@@ -59,7 +61,23 @@ function validateState(input) {
       items,
     };
   });
-  return { baseDate, releases };
+  const milestoneIds = new Set();
+  const milestones = Array.isArray(input.milestones)
+    ? input.milestones.slice(0, 40).map((milestone, index) => {
+        if (!milestone || typeof milestone !== "object") throw new Error(`Некорректный майлстоун ${index + 1}`);
+        const id = cleanText(milestone.id, 80) || `milestone-${index + 1}`;
+        if (milestoneIds.has(id)) throw new Error("Идентификаторы майлстоунов должны быть уникальными");
+        milestoneIds.add(id);
+        const week = Number(milestone.week);
+        if (!Number.isInteger(week) || week < 1 || week > 52) throw new Error("Неделя майлстоуна должна быть от 1 до 52");
+        return {
+          id,
+          label: cleanText(milestone.label, 60) || "Майлстоун",
+          week,
+        };
+      })
+    : [];
+  return { baseDate, releases, milestones };
 }
 
 async function loadState(env) {
@@ -71,6 +89,13 @@ async function loadState(env) {
   } catch {
     return { state: DEFAULT_STATE, updatedAt: row.updated_at, persistent: true };
   }
+}
+
+function serializeStateForHtml(state) {
+  return JSON.stringify(state)
+    .replaceAll("<", "\\u003c")
+    .replaceAll("\u2028", "\\u2028")
+    .replaceAll("\u2029", "\\u2029");
 }
 
 export default {
@@ -107,7 +132,14 @@ export default {
     }
 
     if ((url.pathname === "/" || url.pathname === "/index.html") && request.method === "GET") {
-      return new Response(PAGE, {
+      let initialState = DEFAULT_STATE;
+      try {
+        initialState = (await loadState(env)).state;
+      } catch (error) {
+        console.error("roadmap_initial_render_failed", error);
+      }
+      const page = PAGE.replace("__SERVER_STATE__", serializeStateForHtml(initialState));
+      return new Response(page, {
         headers: {
           "content-type": "text/html; charset=utf-8",
           "cache-control": "no-cache",

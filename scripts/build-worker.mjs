@@ -20,6 +20,7 @@ const dataUri = (mime, buffer) => `data:${mime};base64,${buffer.toString("base64
 
 const page = htmlSource
   .replace("__DEFAULT_ROADMAP__", JSON.stringify(defaultState))
+  .replace("__INITIAL_ROADMAP__", "__SERVER_STATE__")
   .replaceAll("./assets/iq-group-logo.png", dataUri("image/png", logo))
   .replaceAll("./assets/manrope-latin.woff2", dataUri("font/woff2", latinFont))
   .replaceAll("./assets/manrope-cyrillic.woff2", dataUri("font/woff2", cyrillicFont));

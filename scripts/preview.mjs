@@ -1,10 +1,30 @@
 import http from "node:http";
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-const workerSource = await readFile(resolve(import.meta.dirname, "../dist/server/index.js"), "utf8");
+const root = resolve(import.meta.dirname, "..");
+const runtimeDirectory = resolve(root, ".sites-runtime");
+const stateFile = resolve(runtimeDirectory, "local-roadmap-state.json");
+const workerSource = await readFile(resolve(root, "dist/server/index.js"), "utf8");
 const workerModule = await import(`data:text/javascript;base64,${Buffer.from(workerSource).toString("base64")}`);
-let storedRow = null;
+await mkdir(runtimeDirectory, { recursive: true });
+
+let storedRow;
+try {
+  const saved = JSON.parse(await readFile(stateFile, "utf8"));
+  storedRow = { data: JSON.stringify(saved.state), updated_at: saved.updatedAt || null };
+} catch {
+  const initialState = JSON.parse(await readFile(resolve(root, "data/roadmap.json"), "utf8"));
+  storedRow = { data: JSON.stringify(initialState), updated_at: null };
+  await writeFile(stateFile, JSON.stringify({ state: initialState, updatedAt: null }, null, 2));
+}
+
+async function persistStoredRow() {
+  await writeFile(stateFile, JSON.stringify({
+    state: JSON.parse(storedRow.data),
+    updatedAt: storedRow.updated_at,
+  }, null, 2));
+}
 
 const DB = {
   prepare(sql) {
@@ -16,7 +36,10 @@ const DB = {
         return null;
       },
       async run() {
-        if (sql.startsWith("INSERT")) storedRow = { data: bindings[0], updated_at: bindings[1] };
+        if (sql.startsWith("INSERT")) {
+          storedRow = { data: bindings[0], updated_at: bindings[1] };
+          await persistStoredRow();
+        }
         return { success: true };
       },
     };
