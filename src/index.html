@@ -576,6 +576,43 @@
       pointer-events: none;
     }
 
+    .today-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .today-marker {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: rgba(194, 198, 202, .55);
+      box-shadow: 0 0 12px rgba(210, 214, 218, .14);
+      transform: translateX(-1px);
+    }
+
+    .today-label {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      min-width: max-content;
+      padding: 4px 7px;
+      border: 1px solid rgba(194, 198, 202, .34);
+      border-radius: 7px;
+      color: #d2d5d8;
+      background: #303234;
+      box-shadow: 0 7px 20px rgba(0, 0, 0, .24);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
     .milestone-marker {
       position: absolute;
       top: 84px;
@@ -1483,6 +1520,7 @@
             <div class="week-row" id="weekRow" aria-hidden="true"></div>
             <div class="milestone-row" id="milestoneRow" aria-label="Майлстоуны дорожной карты"></div>
             <div id="releaseRows"></div>
+            <div class="today-layer" id="todayLayer" aria-label="Текущая дата на дорожной карте"></div>
             <div class="milestone-layer" id="milestoneLayer" aria-label="Майлстоуны дорожной карты"></div>
           </div>
         </div>
@@ -1580,6 +1618,7 @@
     const weekRow = document.querySelector('#weekRow');
     const milestoneRow = document.querySelector('#milestoneRow');
     const milestoneLayer = document.querySelector('#milestoneLayer');
+    const todayLayer = document.querySelector('#todayLayer');
     const roadmap = document.querySelector('.roadmap');
     const roadmapTitle = document.querySelector('#roadmap-title');
     const detailTag = document.querySelector('#detailTag');
@@ -1734,6 +1773,11 @@
 
     function formatInputDate(date) {
       return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+    }
+
+    function currentCalendarDate() {
+      const now = new Date();
+      return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 12));
     }
 
     function getWeekCount() {
@@ -2019,6 +2063,39 @@
         marker.appendChild(pill);
         milestoneLayer.appendChild(marker);
       });
+    }
+
+    function renderTodayMarker() {
+      todayLayer.replaceChildren();
+      const today = currentCalendarDate();
+      const columnCount = getTimelineColumnCount();
+      const columnWidth = (roadmap.clientWidth - roadmapFixedColumnsWidth) / columnCount;
+      let timelineOffset = -1;
+
+      if (timelineMode === 'sprint') {
+        const days = getSprintDays();
+        if (today < days[0] || today > days.at(-1)) return;
+        const exactIndex = days.findIndex((day) => formatInputDate(day) === formatInputDate(today));
+        timelineOffset = exactIndex >= 0
+          ? exactIndex + .5
+          : days.filter((day) => day < today).length;
+      } else {
+        const elapsedDays = (today - parseDate(roadmapState.baseDate)) / 86400000;
+        if (elapsedDays < 0 || elapsedDays >= columnCount * 7) return;
+        timelineOffset = (elapsedDays + .5) / 7;
+      }
+
+      const marker = document.createElement('div');
+      marker.className = 'today-marker';
+      marker.style.left = `${roadmapFixedColumnsWidth + timelineOffset * columnWidth}px`;
+      marker.setAttribute('role', 'note');
+      marker.setAttribute('aria-label', `Сегодня, ${today.getUTCDate()} ${monthNames[today.getUTCMonth()]}`);
+
+      const label = document.createElement('span');
+      label.className = 'today-label';
+      label.textContent = `Сегодня · ${today.getUTCDate()} ${shortMonthNames[today.getUTCMonth()]}`;
+      marker.appendChild(label);
+      todayLayer.appendChild(marker);
     }
 
     function attachBarDrag(bar, release) {
@@ -2515,6 +2592,7 @@
       renderHeaders();
       renderRoadmap();
       renderMilestones();
+      renderTodayMarker();
       renderDetails();
       renderSummary();
       if (editorOpen) renderEditor();
@@ -2839,7 +2917,10 @@
       editorScroll.scrollTo({ top: 0, behavior: 'smooth' });
     });
     document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && editorOpen) setEditorOpen(false); });
-    window.addEventListener('resize', () => requestAnimationFrame(renderMilestones));
+    window.addEventListener('resize', () => requestAnimationFrame(() => {
+      renderMilestones();
+      renderTodayMarker();
+    }));
     window.addEventListener('beforeunload', (event) => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
     roadmapUpdates?.addEventListener('message', (event) => {
       if (event.data?.type === 'roadmap-updated' && !dirty && !saving) void loadRoadmap(true);
@@ -2848,6 +2929,7 @@
     renderAll();
     loadRoadmap();
     setInterval(() => { if (!dirty && !editorOpen) loadRoadmap(true); }, 2500);
+    setInterval(renderTodayMarker, 60000);
   </script>
 </body>
 </html>

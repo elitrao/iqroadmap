@@ -9,12 +9,16 @@ assert.equal(typeof module.default?.fetch, "function");
 const response = await module.default.fetch(new Request("https://example.test/"), {}, {});
 assert.equal(response.status, 200);
 assert.match(response.headers.get("content-type"), /text\/html/);
-assert.match(await response.text(), /Конструктор roadmap/);
+const analystHtml = await response.text();
+assert.match(analystHtml, /Конструктор roadmap/);
+assert.match(analystHtml, /id="todayLayer"/);
+assert.match(analystHtml, /function renderTodayMarker\(\)/);
 const trainerPage = await module.default.fetch(new Request("https://example.test/trainer"), {}, {});
 assert.equal(trainerPage.status, 200);
 const trainerHtml = await trainerPage.text();
 assert.match(trainerHtml, /AI Тренер/);
 assert.match(trainerHtml, /product-trainer/);
+assert.match(trainerHtml, /id="todayLayer"/);
 assert.doesNotMatch(trainerHtml, />Майлстоуны</);
 
 const storedRows = new Map();
