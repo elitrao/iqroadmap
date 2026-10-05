@@ -41,9 +41,9 @@
       --quiet: #777;
       --border: #3d3d3d;
       --border-warm: #604329;
-      --milestone-text: #f1d2bc;
-      --milestone-bg: #2d231c;
-      --milestone-control: #bf9679;
+      --milestone-text: #aaa;
+      --milestone-bg: #242424;
+      --milestone-control: #999;
       --product-team: #efad7c;
       --release-column: 112px;
       --name-column: 300px;
@@ -64,9 +64,9 @@
       --accent-rgb: 85, 88, 232;
       --bright-rgb: 118, 121, 255;
       --border-warm: #45488d;
-      --milestone-text: #d7d8ff;
-      --milestone-bg: #232440;
-      --milestone-control: #a7a9f5;
+      --milestone-text: #aaa;
+      --milestone-bg: #242424;
+      --milestone-control: #999;
       --product-team: #b8b9ff;
     }
 
@@ -625,46 +625,51 @@
       position: absolute;
       top: 44px;
       bottom: 0;
-      left: -1px;
-      width: 2px;
-      background: repeating-linear-gradient(to bottom, rgba(var(--bright-rgb), .75) 0 6px, transparent 6px 11px);
-      box-shadow: 0 0 14px rgba(var(--accent-rgb), .16);
+      left: 0;
+      width: 1px;
+      background: repeating-linear-gradient(to bottom, rgba(160, 160, 160, .34) 0 4px, transparent 4px 10px);
     }
 
     .milestone-pill {
       position: absolute;
       top: 6px;
       left: 0;
-      min-height: 32px;
+      min-height: 28px;
       display: flex;
       align-items: center;
-      gap: 7px;
-      padding: 5px 9px;
-      border: 1px solid rgba(var(--bright-rgb), .55);
-      border-radius: 9px;
+      gap: 6px;
+      padding: 4px 8px;
+      border: 1px solid rgba(160, 160, 160, .28);
+      border-radius: 8px;
       color: var(--milestone-text);
       background: var(--milestone-bg);
-      box-shadow: 0 10px 28px rgba(0, 0, 0, .3);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, .14);
       pointer-events: auto;
       transform: translateX(-50%);
       white-space: nowrap;
     }
 
     .milestone-pill:focus-visible {
-      outline: 2px solid var(--bright);
+      outline: 1px solid rgba(190, 190, 190, .62);
       outline-offset: 2px;
     }
 
+    body.roadmap-edit-mode .milestone-pill:hover,
+    body.roadmap-edit-mode .milestone-pill:focus-within {
+      border-color: rgba(var(--bright-rgb), .45);
+      color: var(--text);
+    }
+
     .milestone-diamond {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       flex: 0 0 auto;
-      border: 1px solid var(--bright);
-      background: var(--primary);
+      border: 1px solid rgba(190, 190, 190, .62);
+      background: rgba(190, 190, 190, .12);
       transform: rotate(45deg);
     }
 
-    .milestone-title { font-size: 11px; font-weight: 700; }
+    .milestone-title { font-size: 10px; font-weight: 600; }
     .milestone-input {
       width: min(210px, 18vw);
       min-width: 118px;
