@@ -5,15 +5,18 @@ const root = resolve(import.meta.dirname, "..");
 const src = resolve(root, "src");
 const dist = resolve(root, "dist");
 
-const [htmlSource, analystStateText, trainerStateText, serverTemplate, hostingText, logo, latinFont, cyrillicFont] = await Promise.all([
+const [htmlSource, analystStateText, trainerStateText, serverTemplate, hostingText, logo, iqMarkWhite, iqMarkAccent, latinFont, cyrillicFont, horizon] = await Promise.all([
   readFile(resolve(src, "index.html"), "utf8"),
   readFile(resolve(root, "data/roadmap.json"), "utf8"),
   readFile(resolve(root, "data/trainer-roadmap.json"), "utf8"),
   readFile(resolve(root, "worker/server-template.js"), "utf8"),
   readFile(resolve(root, ".openai/hosting.json"), "utf8"),
   readFile(resolve(src, "assets/iq-group-logo.png")),
+  readFile(resolve(src, "assets/iq-mark-white.png")),
+  readFile(resolve(src, "assets/iq-mark-accent-mask.png")),
   readFile(resolve(src, "assets/manrope-latin.woff2")),
   readFile(resolve(src, "assets/manrope-cyrillic.woff2")),
+  readFile(resolve(src, "assets/roadmap-horizon.jpg")),
 ]);
 
 const analystState = JSON.parse(analystStateText);
@@ -22,8 +25,11 @@ const dataUri = (mime, buffer) => `data:${mime};base64,${buffer.toString("base64
 
 const sharedAssets = (source) => source
   .replaceAll("./assets/iq-group-logo.png", dataUri("image/png", logo))
+  .replaceAll("./assets/iq-mark-white.png", dataUri("image/png", iqMarkWhite))
+  .replaceAll("./assets/iq-mark-accent-mask.png", dataUri("image/png", iqMarkAccent))
   .replaceAll("./assets/manrope-latin.woff2", dataUri("font/woff2", latinFont))
-  .replaceAll("./assets/manrope-cyrillic.woff2", dataUri("font/woff2", cyrillicFont));
+  .replaceAll("./assets/manrope-cyrillic.woff2", dataUri("font/woff2", cyrillicFont))
+  .replaceAll("./assets/roadmap-horizon.jpg", dataUri("image/jpeg", horizon));
 
 function buildPage(defaultState, config) {
   return sharedAssets(htmlSource)

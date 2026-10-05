@@ -70,6 +70,46 @@ function validateState(input, defaultState = {}) {
       ? release.items.map((item) => cleanText(item, 160)).filter(Boolean).slice(0, 10)
       : [];
     const fallbackTeam = id === "new-user-journey" ? "product" : "development";
+    const sharedTaskIds = new Set();
+    const sharedTasks = Array.isArray(release.sharedTasks)
+      ? release.sharedTasks.map((task, taskIndex) => {
+        const source = typeof task === "string" ? { title: task } : task;
+        if (!source || typeof source !== "object") return null;
+        const title = cleanText(source.title || source.name, 160);
+        if (!title) return null;
+        const taskId = cleanText(source.id, 80) || `shared-${taskIndex + 1}`;
+        if (sharedTaskIds.has(taskId)) throw new Error("Идентификаторы общих задач должны быть уникальными внутри этапа");
+        sharedTaskIds.add(taskId);
+        const taskStartDate = cleanText(source.startDate, 10);
+        const taskEndDate = cleanText(source.endDate, 10);
+        const taskStartWeek = Number(source.startWeek || startWeek);
+        const taskDurationDays = Number(source.durationDays || Math.max(1, Math.ceil(durationDays / 2)));
+        const taskDuration = Number(source.duration || Math.max(1, Math.ceil(taskDurationDays / 5)));
+        const taskItems = Array.isArray(source.items)
+          ? source.items.map((item) => cleanText(item, 160)).filter(Boolean).slice(0, 10)
+          : [];
+        if (taskStartDate && !/^\d{4}-\d{2}-\d{2}$/.test(taskStartDate)) throw new Error("Некорректная дата общей задачи");
+        if (taskEndDate && !/^\d{4}-\d{2}-\d{2}$/.test(taskEndDate)) throw new Error("Некорректная дата окончания общей задачи");
+        if (!Number.isInteger(taskStartWeek) || taskStartWeek < 1 || taskStartWeek > 52) throw new Error("Неделя общей задачи должна быть от 1 до 52");
+        if (!Number.isInteger(taskDurationDays) || taskDurationDays < 1 || taskDurationDays > 60) throw new Error("Срок общей задачи должен быть от 1 до 60 рабочих дней");
+        if (!Number.isInteger(taskDuration) || taskDuration < 1 || taskDuration > 12) throw new Error("Длительность общей задачи должна быть от 1 до 12 недель");
+        return {
+          id: taskId,
+          title,
+          startDate: taskStartDate,
+          endDate: taskEndDate,
+          startWeek: taskStartWeek,
+          durationDays: taskDurationDays,
+          duration: taskDuration,
+          team: ["product", "development"].includes(source.team) ? source.team : fallbackTeam,
+          status: cleanText(source.status, 30) || "Запланировано",
+          tone: ["", "released", "focus", "parallel", "next"].includes(source.tone) ? source.tone : "",
+          badge: cleanText(source.badge, 24),
+          itemState: cleanText(source.itemState, 24),
+          items: taskItems,
+        };
+      }).filter(Boolean).slice(0, 12)
+      : [];
     return {
       id,
       version: cleanText(release.version, 50) || "Новый этап",
@@ -85,6 +125,7 @@ function validateState(input, defaultState = {}) {
       badge: cleanText(release.badge, 24),
       itemState: cleanText(release.itemState, 24),
       items,
+      sharedTasks,
     };
   });
   const milestoneIds = new Set();

@@ -45,9 +45,13 @@ state.releases[0].items = ["Тест сохранения состава эта�
 state.releases[0].team = "product";
 state.releases[0].startDate = "2026-10-06";
 state.releases[0].durationDays = 8;
+state.releases[0].sharedTasks = [
+  { id: "shared-check", title: "Общая задача для релиза", startDate: "2026-10-06", endDate: "2026-10-08", startWeek: 1, durationDays: 3, duration: 1, team: "product", status: "Сейчас", tone: "focus", badge: "В ФОКУСЕ", itemState: "", items: ["Проверить аналитику", "Согласовать события"] },
+  { id: "shared-scenario", title: "Проверить сценарий", startDate: "2026-10-09", endDate: "2026-10-12", startWeek: 1, durationDays: 2, duration: 1, team: "development", status: "Запланировано", tone: "", badge: "", itemState: "", items: [] },
+];
 state.meta.heroTitle = "Редактируемый заголовок";
 state.milestones = [{ id: "sprint-end", label: "Конец спринта", week: 2 }];
-const scenario = state.releases.find((release) => release.id === "release-muqw1ge8");
+const scenario = state.releases.find((release) => release.id === "tech-debt").sharedTasks[0];
 scenario.items = ["Тест сохранения состава сценария"];
 const denied = await module.default.fetch(new Request("https://example.test/api/roadmap", {
   method: "PUT",
@@ -67,9 +71,13 @@ assert.deepEqual(JSON.parse(storedRows.get(1).data).releases[0].items, ["Тес�
 assert.equal(JSON.parse(storedRows.get(1).data).releases[0].team, "product");
 assert.equal(JSON.parse(storedRows.get(1).data).releases[0].startDate, "2026-10-06");
 assert.equal(JSON.parse(storedRows.get(1).data).releases[0].durationDays, 8);
+assert.deepEqual(JSON.parse(storedRows.get(1).data).releases[0].sharedTasks, [
+  { id: "shared-check", title: "Общая задача для релиза", startDate: "2026-10-06", endDate: "2026-10-08", startWeek: 1, durationDays: 3, duration: 1, team: "product", status: "Сейчас", tone: "focus", badge: "В ФОКУСЕ", itemState: "", items: ["Проверить аналитику", "Согласовать события"] },
+  { id: "shared-scenario", title: "Проверить сценарий", startDate: "2026-10-09", endDate: "2026-10-12", startWeek: 1, durationDays: 2, duration: 1, team: "development", status: "Запланировано", tone: "", badge: "", itemState: "", items: [] },
+]);
 assert.equal(JSON.parse(storedRows.get(1).data).meta.heroTitle, "Редактируемый заголовок");
 assert.deepEqual(JSON.parse(storedRows.get(1).data).milestones, [{ id: "sprint-end", label: "Конец спринта", week: 2, date: "" }]);
-assert.deepEqual(JSON.parse(storedRows.get(1).data).releases.find((release) => release.id === "release-muqw1ge8").items, ["Тест сохранения состава сценария"]);
+assert.deepEqual(JSON.parse(storedRows.get(1).data).releases.find((release) => release.id === "tech-debt").sharedTasks.find((task) => task.id === "shared-muuyrjkq").items, ["Тест сохранения состава сценария"]);
 
 const savedState = JSON.parse(storedRows.get(1).data);
 savedState.releases[0].name = "Серверный рендер без мигания";

@@ -2,7 +2,7 @@
   "baseDate": "2026-09-21",
   "meta": {
     "eyebrow": "План релизов · 1.4",
-    "heroTitle": "Путь к версии 1.4.8",
+    "heroTitle": "AI Аналитик",
     "introCopy": "Версия 1.4 уже выпущена. Следующий цикл посвящён техническому долгу и параллельной проработке нового пользовательского пути — затем начинается 1.4.1.",
     "baseValue": "1.4 выпущена",
     "nowValue": "Технический долг",
@@ -11,6 +11,23 @@
   },
   "releases": [
     {
+      "id": "release-muuwce1x",
+      "version": "1.4",
+      "rowLabel": "1.4",
+      "name": "Страница \"помощь\"",
+      "team": "development",
+      "startWeek": 1,
+      "duration": 2,
+      "startDate": "",
+      "durationDays": 10,
+      "status": "Выпущено",
+      "tone": "released",
+      "badge": "ГОТОВО",
+      "itemState": "Готово",
+      "items": ["Первый результат этапа"],
+      "sharedTasks": []
+    },
+    {
       "id": "tech-debt",
       "version": "Техдолг",
       "rowLabel": "Техдолг",
@@ -18,6 +35,8 @@
       "team": "development",
       "startWeek": 3,
       "duration": 2,
+      "startDate": "",
+      "durationDays": 10,
       "status": "Сейчас",
       "tone": "focus",
       "badge": "В ФОКУСЕ",
@@ -27,28 +46,31 @@
         "Рефакторинг критичных участков",
         "Подготовка базы для следующих релизов",
         "API v1"
-      ]
-    },
-    {
-      "id": "release-muqw1ge8",
-      "version": "Требования и логика 1.4.1",
-      "rowLabel": "Требования и логика 1.4.",
-      "name": "Новый сценарий и первые страницы",
-      "team": "product",
-      "startWeek": 3,
-      "duration": 2,
-      "status": "Сейчас",
-      "tone": "focus",
-      "badge": "В ФОКУСЕ",
-      "itemState": "",
-      "items": [
-        "Текущий пользовательский путь",
-        "Сбор требований и пожеланий по пути и визуалу",
-        "Новый визуально приятный и понятный путь",
-        "Приоритеты по тому, что меняем и где",
-        "Требования к \"настройкам\"",
-        "Требования к \"предложить идею\"",
-        "Требования к переработке визуала"
+      ],
+      "sharedTasks": [
+        {
+          "id": "shared-muuyrjkq",
+          "title": "Требования 1.4.1",
+          "startDate": "2026-10-05",
+          "endDate": "2026-10-16",
+          "startWeek": 3,
+          "durationDays": 10,
+          "duration": 2,
+          "team": "product",
+          "status": "Сейчас",
+          "tone": "focus",
+          "badge": "В ФОКУСЕ",
+          "itemState": "",
+          "items": [
+            "Текущий пользовательский путь",
+            "Сбор требований и пожеланий по пути и визуалу",
+            "Новый визуально приятный и понятный путь",
+            "Приоритеты по тому, что меняем и где",
+            "Требования к \"настройкам\"",
+            "Требования к \"предложить идею\"",
+            "Требования к переработке визуала"
+          ]
+        }
       ]
     },
     {
@@ -59,6 +81,8 @@
       "team": "development",
       "startWeek": 5,
       "duration": 2,
+      "startDate": "",
+      "durationDays": 10,
       "status": "Запланировано",
       "tone": "",
       "badge": "",
@@ -67,40 +91,29 @@
         "Страница настроек",
         "Страница предложения идей",
         "Более приятный и понятный визуал, постепенно"
-      ]
-    },
-    {
-      "id": "release-muqwk90a",
-      "version": "Требования и логика 1.4.2",
-      "rowLabel": "Требования и логика 1.4.",
-      "name": "Новая страница",
-      "team": "product",
-      "startWeek": 5,
-      "duration": 2,
-      "status": "Запланировано",
-      "tone": "",
-      "badge": "",
-      "itemState": "",
-      "items": [
-        "Первый результат этапа"
+      ],
+      "sharedTasks": [
+        {
+          "id": "shared-muv0hnao",
+          "title": "Требования 1.4.2",
+          "startDate": "2026-10-19",
+          "endDate": "2026-10-30",
+          "startWeek": 5,
+          "durationDays": 10,
+          "duration": 2,
+          "team": "product",
+          "status": "Запланировано",
+          "tone": "",
+          "badge": "",
+          "itemState": "",
+          "items": ["Требования к обновленной базе знаний"]
+        }
       ]
     }
   ],
   "milestones": [
-    {
-      "id": "milestone-muqwume7",
-      "label": "1 спринт",
-      "week": 4
-    },
-    {
-      "id": "milestone-muqwvg7z",
-      "label": "1 спринт",
-      "week": 4
-    },
-    {
-      "id": "milestone-muqwviif",
-      "label": "2 спринт",
-      "week": 6
-    }
+    { "id": "milestone-muqwume7", "label": "1 спринт", "week": 4, "date": "" },
+    { "id": "milestone-muqwvg7z", "label": "1 спринт", "week": 4, "date": "" },
+    { "id": "milestone-muqwviif", "label": "2 спринт", "week": 6, "date": "" }
   ]
 }
